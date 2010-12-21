@@ -1,0 +1,4 @@
+- tests
+- more templates
++ generate utils.rb.erb from the current falsework utils.rb
++ the config in home dir

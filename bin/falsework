@@ -1,0 +1,57 @@
+#!/usr/bin/env ruby
+# -*-ruby-*-
+
+require_relative '../lib/falsework/mould'
+
+include Falsework
+
+$conf = Hash.new
+u = Utils.new($conf)
+
+$conf[:banner] = <<EOF
+Usage: #{File.basename($0)} [options] command ...
+Available commands: list, new NAME, exe NAME or test NAME.
+EOF
+$conf[:user] = nil
+$conf[:gecos] = nil
+$conf[:email] = nil
+$conf[:template] = nil
+
+# --[ main ]------------------------------------------------------------
+
+u.config_parse(['foobar']) {|src|
+  o = u.cl_parse(src) # create an OptionParser object
+  o.on('--user STR', 'Github user') {|i| $conf[:user] = i}
+  o.on('--gecos STR', 'A gecos-like string') {|i| $conf[:gecos] = i}
+  o.on('--email STR') {|i| $conf[:email] = i}
+  o.on('-t NAME', 'A template name') {|i| $conf[:template] = i}
+  u.cl_parse(src, o) # run cl parser
+}
+
+Utils.errx(1, $conf[:banner]) if (ARGV.size < 2 && ARGV[0] != 'list')
+
+# print our env
+if $conf[:verbose] >= 2
+  puts 'Libs dir: '+Utils.gem_libdir
+  pp $conf
+end
+
+case ARGV[0]
+when 'list'
+  Mould.templates.each_key {|i| puts(i)}
+when /exe|test/
+  m = Mould.new('foo', $conf[:user], $conf[:email], $conf[:gecos])
+  ARGV[1..-1].each {|i|
+    u.veputs(1, "Generating #{i} as... __NNL__")
+    u.veputs(1, m.create($conf[:template], ARGV[0], i) + '... __NNL__')
+    u.veputs(1, 'OK')
+  }
+when 'new'
+  Utils.errx(1, 'project name cannot start with a digit') if ARGV[1].strip[0] =~ /\d/
+
+  m = Mould.new(ARGV[1], $conf[:user], $conf[:email], $conf[:gecos])
+  m.verbose = true if $conf[:verbose] > 0
+  m.project_seed($conf[:template], nil)
+else
+  Utils.errx(1, "unknown command: " + ARGV[0])
+end

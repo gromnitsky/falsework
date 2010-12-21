@@ -1,0 +1,85 @@
+=Name
+
+falsework--A primitive scaffold generator for CLI projects in Ruby.
+
+
+==Synopsis
+
+ falsework [options] command ...
+
+
+==Description
+
+The falsework utility generates a scaffold which have:
+
+* <tt>gem</tt>, <tt>doc</tt>, <tt>test</tt> targers.
+
+* easy to use configuraton parser/loader; this includes scanning for:
+
+  * env variables;
+  * the flat YAML configuration file;
+  * the command line.
+
+* an ability to pick up a user name & an email for a github project.
+
+The utility can also add skeletons for tests end executables
+<i>after</i> the project generation.
+
+The commands:
+
+list::                      Do nothing except listing all available
+                            templates. You can add your own templates in
+                            <tt>~/.falsework/templates</tt> directory.
+
+new NAME::                  Create a new project. It creates a directory
+                            <i>NAME</i> and populated it with files.
+
+exe NAME::                  Add a new executable to an existing
+                            project. You may use this command only in
+                            the root project directory.
+
+test NAME::                 Add a new test to an existing
+                            project. You may use this command only in
+                            the root project directory.
+
+The options are as follows:
+
+-t::                        A template name.
+
+--config-dirs::             List all possible locations for the
+                            configuration file. The first found wins.
+
+--config NAME::             The name of the configuration file. If
+                            it contains <tt>/</tt> in it, the list from
+                            <tt>--config-dirs</tt> is ignored.
+
+-V::                        Show falsework version and exit.
+
+-v::                        Be more verbose. You can supply it several
+                            times, viz. <tt>-vv</tt> dumps even more
+                            debug info.
+
+==Meta
+
+Version & name of your project can be located at generated
+<tt>myproject/lib/myproject/meta.rb</tt> file.
+
+==Examples
+
+Create a new project:
+
+ % falsework -v new foobar
+
+Add another CL util to the existing project:
+
+ % pwd
+ .../foobar
+ % falsework exe foo
+
+(It will appear in bin/ subdirectory.)
+
+Add another test file:
+
+ % falsework test foo
+
+(It will appear in test/ subdirectory.)
