@@ -15,6 +15,15 @@ else
   require 'minitest/autorun'
 end
 
+def cmd_run(cmd)
+  so = sr = ''
+  status = Open4::popen4(cmd) { |pid, stdin, stdout, stderr|
+    so = stdout.read
+    sr = stderr.read
+  }
+  [status.exitstatus, sr, so]
+end
+
 # Return the right directory for (probably executable) _c_.
 def cmd(c)
   case File.basename(Dir.pwd)

@@ -1,6 +1,6 @@
 =Name
 
-falsework--A primitive scaffold generator for CLI projects in Ruby.
+falsework--A primitive scaffold generator for CLI programs in Ruby.
 
 
 ==Synopsis
@@ -32,7 +32,7 @@ list::                      Do nothing except listing all available
                             <tt>~/.falsework/templates</tt> directory.
 
 new NAME::                  Create a new project. It creates a directory
-                            <i>NAME</i> and populated it with files.
+                            <i>NAME</i> and populates it with files.
 
 exe NAME::                  Add a new executable to an existing
                             project. You may use this command only in

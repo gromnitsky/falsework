@@ -1,8 +1,10 @@
 require_relative 'helper'
 
 class TestUtils < MiniTest::Unit::TestCase
+  CMD = cmd('<%= @project %>') # get path to the exe & cd to tests directory
+  
   def setup
-    cmd 'dummy' # cd to tests directory
+    # this runs every time before test_*
   end
 
   def test_foobar

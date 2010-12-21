@@ -48,6 +48,10 @@ when /exe|test/
   }
 when 'new'
   Utils.errx(1, 'project name cannot start with a digit') if ARGV[1].strip[0] =~ /\d/
+  if File.dirname(ARGV[1]) != '.'
+    Dir.chdir(File.dirname(ARGV[1])) rescue Utils.errx(1, "cannot chdir to '#{File.dirname(ARGV[1])}'")
+    ARGV[1] = File.basename ARGV[1]
+  end
 
   m = Mould.new(ARGV[1], $conf[:user], $conf[:email], $conf[:gecos])
   m.verbose = true if $conf[:verbose] > 0

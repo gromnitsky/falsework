@@ -59,12 +59,14 @@ module Falsework
 
       Dir.mkdir(@project) unless File.directory?(@project)
       prjdir = File.expand_path(@project)
+      puts "Project path: #{prjdir}" if @verbose
 
       origdir = Dir.pwd;
       Dir.chdir @project
 
       r = false
       start = Mould.templates[template || TEMPLATE_DEFAULT] || Utils.errx(1, "no such template: #{template}")
+      puts "Template: #{start}" if @verbose
       symlinks = []
       Mould.traverse(start) {|i|
         file = i.sub(/^#{start}\//, '')
@@ -79,6 +81,7 @@ module Falsework
         elsif File.directory?(i)
           puts("D: #{file}") if @verbose
           file = Mould.erb_dirname(file, binding)
+#          FileUtils.mkdir_p(prjdir + '/' + file)
           Dir.mkdir(prjdir + '/' + file)
           Dir.chdir(prjdir + '/' + file)
         else
@@ -123,7 +126,7 @@ module Falsework
             fail "invalid mode #{mode}"
           end
       Mould.extract(t, binding, to[0])
-      File.chmod(0744, to[0]) if t[1]
+      File.chmod(0744, to[0]) if to[1]
       return to[0]
     end
     

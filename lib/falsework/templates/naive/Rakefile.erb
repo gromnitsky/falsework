@@ -26,7 +26,7 @@ spec = Gem::Specification.new {|i|
   i.rdoc_options << '-m' << 'doc/README.rdoc'
   i.extra_rdoc_files = FileList['doc/*']
 
-#  i.add_dependency('foobar', '>=  1.2.3')
+  i.add_dependency('open4', '>= 1.0.1')
 }
 
 Rake::GemPackageTask.new(spec).define
