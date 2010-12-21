@@ -8,12 +8,11 @@ require 'rake/rdoctask'
 require 'rake/testtask'
 
 NAME = 'falsework'
-require_relative "lib/#{NAME}/meta"
 
 spec = Gem::Specification.new {|i|
   i.name = NAME
   i.version = `bin/#{i.name} -V`
-  i.summary = "A primitive scaffold generator for CLI programs in Ruby."
+  i.summary = "A primitive scaffold generator for writing CLI programs in Ruby."
   i.author = 'Alexander Gromnitsky'
   i.email = 'alexander.gromnitsky@gmail.com'
   i.homepage = "http://github.com/gromnitsky/#{i.name}"
@@ -49,31 +48,17 @@ Rake::TestTask.new do |i|
 end
 
 
-ERB_TEMPLATE_UTILS = "lib/#{NAME}/utils.rb"
-ERB_TARGET_UTILS = "lib/#{NAME}/templates/naive/lib/.@project./#{File.basename(ERB_TEMPLATE_UTILS)}.erb"
-ERB_TEMPLATE_TEST_HELPER = "test/helper.rb"
-ERB_TARGET_TEST_HELPER = "lib/#{NAME}/templates/naive/test/#{File.basename(ERB_TEMPLATE_TEST_HELPER)}.erb"
+#
+# Generate dynamic targets
+#
+require_relative 'test/find_erb_templates'
 
-desc "Generate some erb targets for naive template"
-task :naive => [ERB_TARGET_UTILS, ERB_TARGET_TEST_HELPER]
+ERB_DYN_SKELETON = erb_skeletons(NAME, 'naive')
+ERB_DYN_SKELETON.each {|k, v|
+  file k => [v] do |t|
+    erb_make(NAME, t.name, t.prerequisites[0])
+  end
+}
 
-def make_erb(target, template)
-  raw = File.read(template)
-  raw.gsub!(/#{NAME}/, '<%= @project %>')
-  raw.gsub!(/#{NAME.capitalize}/, '<%= @project.capitalize %>')
-
-  mark = <<-EOF
-
-# Don't remove this: <%= DateTime.now %> <%= #{NAME.capitalize}::Meta::NAME %> <%= #{NAME.capitalize}::Meta::VERSION %>
-  EOF
-  File.open(target, 'w+') {
-    |fp| fp.puts raw + ERB.new(mark).result(binding)
-  }
-end
-
-file ERB_TARGET_UTILS => [ERB_TEMPLATE_UTILS] do |t|
-  make_erb(t.name, t.prerequisites[0])
-end
-file ERB_TARGET_TEST_HELPER => [ERB_TEMPLATE_TEST_HELPER] do |t|
-  make_erb(t.name, t.prerequisites[0])
-end
+desc "Generate some erb templates for naive template"
+task naive: ERB_DYN_SKELETON.keys

@@ -1,3 +1,4 @@
+# :erb:
 # Various staff for minitest.
 
 require 'fileutils'

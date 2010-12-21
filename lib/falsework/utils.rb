@@ -1,3 +1,4 @@
+# :erb:
 require 'yaml'
 require 'shellwords.rb'
 require 'optparse'

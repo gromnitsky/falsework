@@ -2,7 +2,7 @@ require 'git'
 require 'erb'
 require 'digest/md5'
 
-require_relative 'utils.rb'
+require_relative 'utils'
 
 module Falsework
   class Mould
@@ -135,11 +135,11 @@ module Falsework
     #
     # [start] The directory to start with.
     def self.traverse(start, &block)
-      l = Dir.glob(start + '/{*,.*}')
+      l = Dir.glob(start + '/{*}', File::FNM_DOTMATCH)
       # stop if directory is empty (contains only . and ..)
       return if l.size <= 2
       
-      l.sort[2..-1].each {|i|
+      l[2..-1].each {|i|
         yield i
         # recursion!
         self.traverse(i) {|j| block.call j} if File.directory?(i)

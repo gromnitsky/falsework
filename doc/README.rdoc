@@ -1,6 +1,7 @@
 =Name
 
-falsework--A primitive scaffold generator for CLI programs in Ruby.
+falsework--A primitive scaffold generator for writing CLI programs in
+Ruby.
 
 
 ==Synopsis
