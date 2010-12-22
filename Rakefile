@@ -18,11 +18,12 @@ spec = Gem::Specification.new {|i|
   i.homepage = "http://github.com/gromnitsky/#{i.name}"
   i.platform = Gem::Platform::RUBY
   i.required_ruby_version = '>= 1.9.2'
-  i.files = FileList.new('lib/**/*', 'bin/*', 'doc/*',
+  i.files = FileList.new('bin/*', 'doc/*',
                          'etc/*', '[A-Z]*', 'test/**/*') {|f|
     f.exclude('test/templates/*')
     f.include('test/templates/.keep_me')
-    f.include('lib/**/.gitignore.erb')
+    f.include(Dir.glob('lib/**/*', File::FNM_DOTMATCH))
+    f.exclude('lib/**/{.*,*}/.gitignore')
   }
 
   i.executables = FileList['bin/*'].gsub(/^bin\//, '')
