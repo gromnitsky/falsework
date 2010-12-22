@@ -17,7 +17,7 @@ class TestFalsework < MiniTest::Unit::TestCase
     rm_rf 'templates/foo'
     r = cmd_run "#{CMD} new templates/foo -v"
 #    pp r
-    assert_equal(0, r[0])
+    assert_equal(0, r[0], r)
 
     # check for first & last lines only
     out = r[2].split("\n")
