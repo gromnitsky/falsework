@@ -6,6 +6,8 @@ require 'rake/clean'
 require 'rake/rdoctask'
 require 'rake/testtask'
 
+require_relative 'test/rake_git'
+
 spec = Gem::Specification.new {|i|
   i.name = '<%= @project %>'
   i.version = `bin/#{i.name} -V`
@@ -15,8 +17,7 @@ spec = Gem::Specification.new {|i|
   i.homepage = "http://github.com/<%= @user %>/#{i.name}"
   i.platform = Gem::Platform::RUBY
   i.required_ruby_version = '>= <%= RUBY_VERSION %>'
-  i.files = FileList['lib/**/*', 'bin/*', 'doc/*',
-                     'etc/*', '[A-Z]*', 'test/**/*']
+  i.files = git_ls('.')
 
   i.executables = FileList['bin/*'].gsub(/^bin\//, '')
   i.default_executable = i.name

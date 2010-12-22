@@ -1,0 +1,7 @@
+=== 0.1.2
+
+Wed Dec 22 19:09:01 EET 2010
+
+- Create a git repository automatically for a new project.
+
+- Generate a gem file list from git ls-tree.

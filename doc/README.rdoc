@@ -13,15 +13,20 @@ Ruby.
 
 The falsework utility generates a scaffold which have:
 
-* <tt>gem</tt>, <tt>doc</tt>, <tt>test</tt> targers.
+* auto-created git (but not github) project;
 
-* easy to use configuraton parser/loader; this includes scanning for:
+* <tt>gem</tt> (a file list is pulled from the git repository, no more
+  missing files in gems!), <tt>doc</tt>, <tt>test</tt> targers;
 
-  * env variables;
+* easy to use configuraton parser/loader. This includes scanning for:
+
+  * env variable(s);
   * the flat YAML configuration file;
   * the command line.
 
 * an ability to pick up a user name & an email for a github project.
+
+The generated project <b>is not dependent</b> on falsework.
 
 The utility can also add skeletons for tests end executables
 <i>after</i> the project generation.
@@ -39,7 +44,7 @@ exe NAME::                  Add a new executable to an existing
                             project. You may use this command only in
                             the root project directory.
 
-test NAME::                 Add a new test to an existing
+test NAME::                 Add a new minitest to an existing
                             project. You may use this command only in
                             the root project directory.
 
@@ -77,10 +82,10 @@ Add another CL util to the existing project:
  .../foobar
  % falsework exe foo
 
-(It will appear in bin/ subdirectory.)
+(It will appear in <tt>bin/</tt> sub-directory.)
 
 Add another test file:
 
  % falsework test foo
 
-(It will appear in test/ subdirectory.)
+(It will appear in <tt>test/</tt> sub-directory.)

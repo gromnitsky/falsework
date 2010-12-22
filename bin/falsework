@@ -47,15 +47,23 @@ when /exe|test/
     u.veputs(1, 'OK')
   }
 when 'new'
-  Utils.errx(1, 'project name cannot start with a digit') if ARGV[1].strip[0] =~ /\d/
   if File.dirname(ARGV[1]) != '.'
     Dir.chdir(File.dirname(ARGV[1])) rescue Utils.errx(1, "cannot chdir to '#{File.dirname(ARGV[1])}'")
     ARGV[1] = File.basename ARGV[1]
   end
+  Utils.errx(1, 'project name cannot start with a digit') if ARGV[1].strip[0] =~ /\d/
 
   m = Mould.new(ARGV[1], $conf[:user], $conf[:email], $conf[:gecos])
   m.verbose = true if $conf[:verbose] > 0
   m.project_seed($conf[:template], nil)
+
+  # create a git repository
+  Dir.chdir ARGV[1]
+  u.veputs(1, "Creating a git repository in #{Dir.pwd}... __NNL__")
+  g = Git.init
+  g.add('.')
+  g.commit("Initial import from #{Falsework::Meta::NAME} #{Falsework::Meta::VERSION}.")
+  u.veputs(1, 'OK')
 else
   Utils.errx(1, "unknown command: " + ARGV[0])
 end
