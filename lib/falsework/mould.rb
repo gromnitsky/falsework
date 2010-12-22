@@ -72,7 +72,7 @@ module Falsework
         file = i.sub(/^#{start}\//, '')
         next if filter ? file =~ filter : false
         next if IGNORE_FILES.index {|ign| file.match(/#{ign}$/) }
-        
+
         if File.symlink?(i)
           # we'll process them later on
           is_dir = File.directory?(start + '/' + File.readlink(i))
@@ -121,7 +121,7 @@ module Falsework
             start + '/' + 'bin/.@project..erb'
           when 'test'
             to = ["#{mode}/test_#{what}.rb", false]
-            start + '/' + 'test/test_utils.rb.erb'
+            start + '/' + 'test/test_.@project..rb.erb'
           else
             fail "invalid mode #{mode}"
           end
@@ -139,7 +139,7 @@ module Falsework
       # stop if directory is empty (contains only . and ..)
       return if l.size <= 2
       
-      l[2..-1].each {|i|
+      l.sort[2..-1].each {|i|
         yield i
         # recursion!
         self.traverse(i) {|j| block.call j} if File.directory?(i)
@@ -190,7 +190,7 @@ module Falsework
     #
     # [bin] A binding for eval.
     def self.erb_filename(t, bin)
-      if t =~ /^(.+\/)?\.(.+)\.(\..+)?.erb$/
+      if t =~ /^(.+)?\.(.+)\.(\..+)?.erb$/
         return ERB.new("#{$1}<%= #{$2} %>#{$3}").result(bin)
       end
       return t

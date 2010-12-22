@@ -1,6 +1,6 @@
 require_relative 'helper'
 
-class TestUtils < MiniTest::Unit::TestCase
+class Test<%= @project.capitalize %>_<%= rand 2**32 %> < MiniTest::Unit::TestCase
   CMD = cmd('<%= @project %>') # get path to the exe & cd to tests directory
   
   def setup
