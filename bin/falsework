@@ -10,7 +10,7 @@ u = Trestle.new($conf)
 
 $conf[:banner] = <<EOF
 Usage: #{File.basename($0)} [options] command ...
-Available commands: list, new NAME, exe NAME or test NAME.
+Available commands: list, new NAME, exe NAME, test NAME, lib NAME or upgrade.
 EOF
 $conf[:user] = nil
 $conf[:gecos] = nil
@@ -28,7 +28,7 @@ u.config_parse(['foobar']) {|src|
   u.cl_parse(src, o) # run cl parser
 }
 
-Trestle.errx(1, $conf[:banner]) if (ARGV.size < 2 && ARGV[0] != 'list')
+Trestle.errx(1, $conf[:banner]) if (ARGV.size < 2 && ARGV[0] !~ /list|upgrade/)
 
 # print our env
 if $conf[:verbose] >= 2
@@ -39,13 +39,16 @@ end
 case ARGV[0]
 when 'list'
   Mould.templates.each_key {|i| puts(i)}
-when /exe|test/
-  m = Mould.new('foo', $conf[:user], $conf[:email], $conf[:gecos])
+when /exe|test|lib/
+  m = Mould.new(File.basename(Dir.pwd), $conf[:user], $conf[:email], $conf[:gecos])
   ARGV[1..-1].each {|i|
     u.veputs(1, "Generating #{i} as... __NNL__")
     u.veputs(1, m.create($conf[:template], ARGV[0], i) + '... __NNL__')
     u.veputs(1, 'OK')
   }
+when 'upgrade'
+  m = Mould.new(File.basename(Dir.pwd), $conf[:user], $conf[:email], $conf[:gecos])
+  m.upgrade($conf[:template])
 when 'new'
   if File.dirname(ARGV[1]) != '.'
     Dir.chdir(File.dirname(ARGV[1])) rescue Trestle.errx(1, "cannot chdir to '#{File.dirname(ARGV[1])}'")

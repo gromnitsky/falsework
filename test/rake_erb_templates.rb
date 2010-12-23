@@ -13,8 +13,8 @@ def erb_skeletons(local_prj, template)
   line_max = 4
   target = File.absolute_path("lib/#{local_prj}/templates/#{template}")
   r = {}
-  skiplist = ['/.git[^i]?', template, '/html', '/pkg', '/test/templates',
-             'find_erb_templates.rb']
+  skiplist = ['/.git[^i]?', "lib/#{local_prj}/templates", '/html', '/pkg',
+              '/test/templates', 'rake_erb_templates.rb']
 
   Falsework::Mould.traverse('.') {|i|
     next if File.directory?(i)
@@ -31,7 +31,7 @@ def erb_skeletons(local_prj, template)
 #        puts line
         if line =~ /^..? :erb:/
           t = i.sub(/^.+?\//, '')
-          r[target + '/' + t.sub(/#{local_prj}/, '.@project.') + '.erb'] = t
+          r[target + '/' + t.sub(/#{local_prj}/, '%%@project%%') + '.erb'] = t
           break
         end
         n += 1
@@ -49,7 +49,7 @@ def erb_make(local_prj, target, template)
 
   mark = <<-EOF
 
-# Don't remove this: <%= DateTime.now %> <%= #{local_prj.capitalize}::Meta::NAME %> <%= #{local_prj.capitalize}::Meta::VERSION %>
+# Don't remove this: <%= #{local_prj.capitalize}::Meta::NAME %>/<%= #{local_prj.capitalize}::Meta::VERSION %>/${template}/<%= DateTime.now %>
   EOF
   File.open(target, 'w+') {
     |fp| fp.puts raw + ERB.new(mark).result(binding)

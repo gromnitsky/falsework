@@ -51,7 +51,7 @@ module Falsework
     # Return false if nothing was extracted.
     def project_seed(template, filter)
       sl = ->(is_dir, *args) {
-        is_dir ? Mould.erb_dirname(*args) : Mould.erb_filename(*args)
+        is_dir ? Mould.erb_fname(*args) : Mould.erb_fname(*args).sub(/\.erb$/, '')
       }
       
       # check for existing project
@@ -80,13 +80,13 @@ module Falsework
                        sl.call(is_dir, file, binding)]
         elsif File.directory?(i)
           puts("D: #{file}") if @verbose
-          file = Mould.erb_dirname(file, binding)
+          file = Mould.erb_fname(file, binding)
 #          FileUtils.mkdir_p(prjdir + '/' + file)
           Dir.mkdir(prjdir + '/' + file)
           Dir.chdir(prjdir + '/' + file)
         else
           puts("N: #{file}") if @verbose
-          to = File.basename(Mould.erb_filename(file, binding), '.erb')
+          to = File.basename(Mould.erb_fname(file, binding), '.erb')
           Mould.extract(start + '/' + file, binding, to)
           # make files in bin/ executable
           File.chmod(0744, to) if file =~ /bin\//
@@ -97,8 +97,10 @@ module Falsework
       # create saved symlinks
       Dir.chdir prjdir
       symlinks.each {|i|
-        src = i[0].sub(/#{File.extname(i[0])}$/, '')
-        dest = i[1].sub(/#{File.extname(i[1])}$/, '')
+#        src = i[0].sub(/#{File.extname(i[0])}$/, '')
+#        dest = i[1].sub(/#{File.extname(i[1])}$/, '')
+        src = i[0]
+        dest = i[1]
         puts "L: #{dest} => #{src}" if @verbose
         File.symlink(src, dest)
       }
@@ -135,11 +137,13 @@ module Falsework
     #
     # [start] The directory to start with.
     def self.traverse(start, &block)
-      l = Dir.glob(start + '/{*}', File::FNM_DOTMATCH)
+      l = Dir.glob(start + '/*', File::FNM_DOTMATCH).delete_if {
+        |i| i.match /\/?\.\.?$/
+      }
       # stop if directory is empty (contains only . and ..)
-      return if l.size <= 2
+      return if l.size == 0
       
-      l.sort[2..-1].each {|i|
+      l.sort.each {|i|
         yield i
         # recursion!
         self.traverse(i) {|j| block.call j} if File.directory?(i)
@@ -176,24 +180,45 @@ module Falsework
       end
     end
 
-    # Evaluate _t_ as a special directory name.
-    #
-    # [bin] A binding for eval.
-    def self.erb_dirname(t, bin)
-      if t =~ /^(.+\/)?\.(.+)\.$/
-        return ERB.new("#{$1}<%= #{$2} %>").result(bin)
-      end
+    def self.erb_fname(t, bin)
+      re = /%%([^.]+)?%%/
+      return ERB.new(t.gsub(re, '<%= \1 %>')).result(bin) if t =~ re
       return t
     end
+    
 
-    # Evaluate _t_ as a special file name.
+    # Search for all files in the project (except .git directory) for the line
     #
-    # [bin] A binding for eval.
-    def self.erb_filename(t, bin)
-      if t =~ /^(.+)?\.(.+)\.(\..+)?.erb$/
-        return ERB.new("#{$1}<%= #{$2} %>#{$3}").result(bin)
-      end
-      return t
+    # /^..? :erb:/
+    #
+    # in first 4 lines. If the line is found, the file is considered a
+    # skeleton for a template. Return a hash {target:template}
+    def upgradable_files(template)
+      line_max = 4
+      r = {}
+      Falsework::Mould.traverse(template) {|i|
+        next if File.directory?(i)
+        next if File.symlink?(i) # hm...
+
+        File.open(i) {|fp|
+          n = 0
+          while n < line_max && line = fp.gets
+            if line =~ /^..? :erb:/
+              t = i.sub(/#{template}\//, '')
+              r[Mould.erb_fname(t, binding).sub(/\.erb$/, '')] = i
+              break
+            end
+            n += 1
+          end
+        }
+      }
+      
+      r
+    end
+    
+    def upgrade(template)
+      t = Mould.templates[template || TEMPLATE_DEFAULT] || Trestle.errx(1, "no such template: #{template}")
+      pp upgradable_files(t)
     end
     
   end # Mould
