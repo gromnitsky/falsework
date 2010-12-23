@@ -3,13 +3,26 @@ require 'yaml'
 require 'shellwords.rb'
 require 'optparse'
 require 'pp'
+require 'open4'
 
 require_relative 'meta'
 
 # :include: ../../README.rdoc
 module Falsework
 
-  class Utils
+  class Trestle
+
+    # Execute _cmd_ and return a list [exit_status, stderr,
+    # stdout]. Very handy.
+    def self.cmd_run(cmd)
+      so = sr = ''
+      status = Open4::popen4(cmd) { |pid, stdin, stdout, stderr|
+        so = stdout.read
+        sr = stderr.read
+      }
+      [status.exitstatus, sr, so]
+    end
+
     # Return a directory with program libraries.
     def self.gem_libdir
       t = ["#{File.dirname(File.expand_path($0))}/../lib/#{Falsework::Meta::NAME}",
@@ -114,7 +127,7 @@ module Falsework
 #        puts "\n2 run"
         r = config_flat_load(rvars)
       rescue
-        Utils.errx(1, "cannot load config: #{$!}")
+        Trestle.errx(1, "cannot load config: #{$!}")
       end
       veputs(1, "Loaded config: #{r}")
       cb.call(block_given?, ARGV)
@@ -193,9 +206,9 @@ module Falsework
         o.parse!(src)
         @cl_parsing_times += 1
       rescue
-        Utils.errx(1, $!.to_s)
+        Trestle.errx(1, $!.to_s)
       end
     end
     
-  end # Utils
+  end # trestle
 end

@@ -6,7 +6,7 @@ require_relative '../lib/falsework/mould'
 include Falsework
 
 $conf = Hash.new
-u = Utils.new($conf)
+u = Trestle.new($conf)
 
 $conf[:banner] = <<EOF
 Usage: #{File.basename($0)} [options] command ...
@@ -28,11 +28,11 @@ u.config_parse(['foobar']) {|src|
   u.cl_parse(src, o) # run cl parser
 }
 
-Utils.errx(1, $conf[:banner]) if (ARGV.size < 2 && ARGV[0] != 'list')
+Trestle.errx(1, $conf[:banner]) if (ARGV.size < 2 && ARGV[0] != 'list')
 
 # print our env
 if $conf[:verbose] >= 2
-  puts 'Libs dir: '+Utils.gem_libdir
+  puts 'Libs dir: '+Trestle.gem_libdir
   pp $conf
 end
 
@@ -48,10 +48,10 @@ when /exe|test/
   }
 when 'new'
   if File.dirname(ARGV[1]) != '.'
-    Dir.chdir(File.dirname(ARGV[1])) rescue Utils.errx(1, "cannot chdir to '#{File.dirname(ARGV[1])}'")
+    Dir.chdir(File.dirname(ARGV[1])) rescue Trestle.errx(1, "cannot chdir to '#{File.dirname(ARGV[1])}'")
     ARGV[1] = File.basename ARGV[1]
   end
-  Utils.errx(1, 'project name cannot start with a digit') if ARGV[1].strip[0] =~ /\d/
+  Trestle.errx(1, 'project name cannot start with a digit') if ARGV[1].strip[0] =~ /\d/
 
   m = Mould.new(ARGV[1], $conf[:user], $conf[:email], $conf[:gecos])
   m.verbose = true if $conf[:verbose] > 0
@@ -65,5 +65,5 @@ when 'new'
   g.commit("Initial import from #{Falsework::Meta::NAME} #{Falsework::Meta::VERSION}.")
   u.veputs(1, 'OK')
 else
-  Utils.errx(1, "unknown command: " + ARGV[0])
+  Trestle.errx(1, "unknown command: " + ARGV[0])
 end

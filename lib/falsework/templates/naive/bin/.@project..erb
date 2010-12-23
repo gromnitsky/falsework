@@ -1,12 +1,12 @@
 #!/usr/bin/env ruby
 # -*-ruby-*-
 
-require_relative '../lib/<%= @project %>/utils.rb'
+require_relative '../lib/<%= @project %>/trestle.rb'
 
 include <%= @project.capitalize %>
 
 $conf = Hash.new
-u = Utils.new($conf)
+u = Trestle.new($conf)
 
 $conf[:banner] = "Usage: #{File.basename($0)} [options] hren'"
 $conf[:foobar] = ''
@@ -24,7 +24,7 @@ u.config_parse(['foobar']) {|src|
 
 # print our env
 if $conf[:verbose] >= 2
-  puts 'Libs dir: '+Utils.gem_libdir
+  puts 'Libs dir: ' + Trestle.gem_libdir
   pp $conf
 end
 

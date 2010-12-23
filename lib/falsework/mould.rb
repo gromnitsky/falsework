@@ -2,12 +2,12 @@ require 'git'
 require 'erb'
 require 'digest/md5'
 
-require_relative 'utils'
+require_relative 'trestle'
 
 module Falsework
   class Mould
     GITCONFIG = '~/.gitconfig'
-    TEMPLATE_DIRS = [Utils.gem_libdir + '/templates',
+    TEMPLATE_DIRS = [Trestle.gem_libdir + '/templates',
                      File.expand_path('~/.' + Meta::NAME + '/templates')]
     TEMPLATE_DEFAULT = 'naive'
     IGNORE_FILES = ['.gitignore']
@@ -26,7 +26,7 @@ module Falsework
       [['github.user', @user],
        ['user.email', @email],
        ['user.name', @gecos]].each {|i|
-        Utils.errx(1, "missing #{i.first} in #{GITCONFIG}") if i.last.to_s == ''
+        Trestle.errx(1, "missing #{i.first} in #{GITCONFIG}") if i.last.to_s == ''
       }
     end
 
@@ -55,7 +55,7 @@ module Falsework
       }
       
       # check for existing project
-      Utils.errx(1, "directory '#{@project}' is not empty") if Dir.glob(@project + '/*').size > 0
+      Trestle.errx(1, "directory '#{@project}' is not empty") if Dir.glob(@project + '/*').size > 0
 
       Dir.mkdir(@project) unless File.directory?(@project)
       prjdir = File.expand_path(@project)
@@ -65,7 +65,7 @@ module Falsework
       Dir.chdir @project
 
       r = false
-      start = Mould.templates[template || TEMPLATE_DEFAULT] || Utils.errx(1, "no such template: #{template}")
+      start = Mould.templates[template || TEMPLATE_DEFAULT] || Trestle.errx(1, "no such template: #{template}")
       puts "Template: #{start}" if @verbose
       symlinks = []
       Mould.traverse(start) {|i|
@@ -113,7 +113,7 @@ module Falsework
     #
     # Return a name of a created file.
     def create(template, mode, what)
-      start = Mould.templates[template || TEMPLATE_DEFAULT] || Utils.errx(1, "no such template: #{template}")
+      start = Mould.templates[template || TEMPLATE_DEFAULT] || Trestle.errx(1, "no such template: #{template}")
 
       t = case mode
           when 'exe'
@@ -157,7 +157,7 @@ module Falsework
 #        pp t.result
         md5_system = Digest::MD5.hexdigest(t.result(bin))
       rescue Exception
-        Utils.errx(1, "cannot read the template file: #{$!}")
+        Trestle.errx(1, "cannot read the template file: #{$!}")
       end
 
       skeleton = to || File.basename(path, '.erb')
@@ -166,12 +166,12 @@ module Falsework
         begin
           File.open(skeleton, 'w+') { |fp| fp.puts t.result(bin) }
         rescue
-          Utils.errx(1, "cannot write the skeleton: #{$!}")
+          Trestle.errx(1, "cannot write the skeleton: #{$!}")
         end
       elsif
         # warn a careless user
         if md5_system != Digest::MD5.file(skeleton).hexdigest
-          Utils.errx(1, "#{skeleton} already exists")
+          Trestle.errx(1, "#{skeleton} already exists")
         end
       end
     end

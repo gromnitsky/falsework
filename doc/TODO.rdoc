@@ -4,6 +4,7 @@
 - an ability to upgrade project to a newest template
 - more templates (a light one?)
 - write a small tutorial 'how to write a template'
+- add a new lib to an already generated project
 - release to rubygems.org (it must run test, pull to github, tag, create
   gem & upload it)
 + generate utils.rb.erb from the current falsework utils.rb
