@@ -12,10 +12,11 @@ module Falsework
     TEMPLATE_DEFAULT = 'naive'
     IGNORE_FILES = ['.gitignore']
 
-    attr_accessor :verbose
+    attr_accessor :verbose, :batch
     
     def initialize(project, user = nil, email = nil, gecos = nil)
       @verbose = false
+      @batch = false
       
       gc = Git.global_config rescue gc = {}
       @project = project
@@ -120,10 +121,10 @@ module Falsework
       t = case mode
           when 'exe'
             to = ["bin/#{what}", true]
-            start + '/' + 'bin/.@project..erb'
+            start + '/' + 'bin/%%@project%%.erb'
           when 'test'
             to = ["#{mode}/test_#{what}.rb", false]
-            start + '/' + 'test/test_.@project..rb.erb'
+            start + '/' + 'test/test_%%@project%%.rb.erb'
           else
             fail "invalid mode #{mode}"
           end
@@ -187,12 +188,12 @@ module Falsework
     end
     
 
-    # Search for all files in the project (except .git directory) for the line
+    # Search for all files in the _template_ for the line
     #
     # /^..? :erb:/
     #
-    # in first 4 lines. If the line is found, the file is considered a
-    # skeleton for a template. Return a hash {target:template}
+    # in first n lines. If the line is found, the file is considered a
+    # candidate for an upgrade. Return a hash {target:template}
     def upgradable_files(template)
       line_max = 4
       r = {}
@@ -215,10 +216,93 @@ module Falsework
       
       r
     end
-    
+
+    # We can upgrade only those files, which were explicitly marked by
+    # ':erb' sign a the top the file. They are collected by
+    # upgradable_files() method.
+    #
+    # The upgrade can happened only if one following conditions is met:
+    # 
+    # 1. there is no such files (all or some of them) in the project at
+    #    all;
+    #
+    # 2. the files are from the previous version of falsework.
+    #
+    # The situation may combine: you may have some missing and some old
+    # files. But if there is at least 1 file from a newer version of
+    # falsework then no upgrade is possible--it's considered a user
+    # decision to intentionally have some files from the old versions of
+    # falsework.
+    #
+    # Neithe we do check for a content of upgradable files nor try to
+    # merge old with new. (Why?)
     def upgrade(template)
+      # 0. search for 'new' files in the template
       t = Mould.templates[template || TEMPLATE_DEFAULT] || Trestle.errx(1, "no such template: #{template}")
-      pp upgradable_files(t)
+      uf = upgradable_files(t)
+      fail "template #{template} cannot offer to you files for an upgrade" if uf.size == 0
+ #     pp uf
+      
+      # 1. analyse 'old' files
+      u = {}
+      uf.each {|k, v|
+        if ! File.readable?(k)
+          u[k] = v
+        else
+          # check for its version
+          File.open(k) {|fp|
+            is_versioned = false
+            while line = fp.gets
+              if line =~ /^# Don't remove this: falsework\/(#{Gem::Version::VERSION_PATTERN})\/(\w+)\/.+/
+                is_versioned = true
+                if $3 != (template || TEMPLATE_DEFAULT)
+                  fail "file #{k} is from #{$3} template"
+                end
+                if Gem::Version.new(Meta::VERSION) >= Gem::Version.new($1)
+#                  puts "#{k}: #{$1}"
+                  u[k] = v
+                  break
+                else
+                  fail "file #{k} is from a newer version of #{Meta::NAME}: " + $1
+                end
+              end
+            end
+
+            Trestle.warnx("#{k}: unversioned") if ! is_versioned
+          }
+        end
+      }
+      fail "template #{template || TEMPLATE_DEFAULT} cannot find files for an upgrade" if u.size == 0
+
+      # 2. ask user for a commitment
+      if ! @batch
+        puts "Here is a list of files in project #{@project} we can try to upgrade/add:\n\n"
+        u.each {|k,v| puts "\t#{k}"}
+        printf %{
+Does this look fine? Type y/n and press enter. If you choose 'y', those files
+will be replaced with newer versions. Your old files will be preserved with
+an '.old' extension. So? }
+        if STDIN.gets =~ /^y/i
+          puts ""
+        else
+          puts "\nNo? See you later."
+          exit 0
+        end
+      end
+
+      # 3. rename & write new
+      count = 1
+      total = u.size
+      tsl = total.to_s.size*2+1
+      u.each {|k, v|
+        printf("%#{tsl}s) mv %s %s\n",
+               "#{count}/#{total}", k, "#{k}.old") if @verbose
+        File.rename(k, "#{k}.old") rescue Trestle.warnx('renaming failed')
+        printf("%#{tsl}s  Extracting %s ...\n", "", File.basename(v)) if @verbose
+        FileUtils.mkdir_p(File.dirname(k))
+        Mould.extract(v, binding, k)
+        count += 1
+      }
     end
     
   end # Mould

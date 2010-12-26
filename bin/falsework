@@ -10,12 +10,13 @@ u = Trestle.new($conf)
 
 $conf[:banner] = <<EOF
 Usage: #{File.basename($0)} [options] command ...
-Available commands: list, new NAME, exe NAME, test NAME, lib NAME or upgrade.
+Available commands: list, new NAME, exe NAME, test NAME or upgrade.
 EOF
 $conf[:user] = nil
 $conf[:gecos] = nil
 $conf[:email] = nil
 $conf[:template] = nil
+$conf[:batch] = false
 
 # --[ main ]------------------------------------------------------------
 
@@ -25,6 +26,7 @@ u.config_parse(['foobar']) {|src|
   o.on('--gecos STR', 'A gecos-like string') {|i| $conf[:gecos] = i}
   o.on('--email STR') {|i| $conf[:email] = i}
   o.on('-t NAME', 'A template name') {|i| $conf[:template] = i}
+  o.on('-b', 'Run in a batch mode, don\'t ask any questions') { $conf[:batch] = true}
   u.cl_parse(src, o) # run cl parser
 }
 
@@ -39,7 +41,7 @@ end
 case ARGV[0]
 when 'list'
   Mould.templates.each_key {|i| puts(i)}
-when /exe|test|lib/
+when /exe|test/
   m = Mould.new(File.basename(Dir.pwd), $conf[:user], $conf[:email], $conf[:gecos])
   ARGV[1..-1].each {|i|
     u.veputs(1, "Generating #{i} as... __NNL__")
@@ -48,7 +50,9 @@ when /exe|test|lib/
   }
 when 'upgrade'
   m = Mould.new(File.basename(Dir.pwd), $conf[:user], $conf[:email], $conf[:gecos])
-  m.upgrade($conf[:template])
+  m.verbose = true if $conf[:verbose] > 0
+  m.batch = $conf[:batch]
+  m.upgrade($conf[:template]) rescue Trestle.errx(1, $!.to_s)
 when 'new'
   if File.dirname(ARGV[1]) != '.'
     Dir.chdir(File.dirname(ARGV[1])) rescue Trestle.errx(1, "cannot chdir to '#{File.dirname(ARGV[1])}'")

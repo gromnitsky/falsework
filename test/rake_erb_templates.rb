@@ -42,14 +42,14 @@ def erb_skeletons(local_prj, template)
   r
 end
 
-def erb_make(local_prj, target, template)
-  raw = File.read(template)
+def erb_make(local_prj, template, target, tmplt)
+  raw = File.read(tmplt)
   raw.gsub!(/#{local_prj}/, '<%= @project %>')
   raw.gsub!(/#{local_prj.capitalize}/, '<%= @project.capitalize %>')
 
   mark = <<-EOF
 
-# Don't remove this: <%= #{local_prj.capitalize}::Meta::NAME %>/<%= #{local_prj.capitalize}::Meta::VERSION %>/${template}/<%= DateTime.now %>
+# Don't remove this: <%= #{local_prj.capitalize}::Meta::NAME %>/<%= #{local_prj.capitalize}::Meta::VERSION %>/#{template}/<%= DateTime.now %>
   EOF
   File.open(target, 'w+') {
     |fp| fp.puts raw + ERB.new(mark).result(binding)

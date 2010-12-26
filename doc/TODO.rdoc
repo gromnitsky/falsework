@@ -1,10 +1,9 @@
 + create a git repository automatically for a new project
 + generate a gem file list from git ls-tree
 + check for every generated file in naive test template generation
-- an ability to upgrade project to a newest template
++ an ability to upgrade project to a newest template
 - more templates (a lighter one?)
 - write a small tutorial 'how to write a template'
-- add a new lib to an already generated project
 - release to rubygems.org (it must run test, pull to github, tag, create
   gem & upload it)
 + the config in home dir

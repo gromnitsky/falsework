@@ -1,5 +1,5 @@
 # :erb:
-# Various staff for minitest.
+# Various staff for minitest. Include this file into your 'helper.rb'.
 
 require 'fileutils'
 include FileUtils

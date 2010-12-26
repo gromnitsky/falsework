@@ -2,10 +2,23 @@
 # -*-ruby-*-
 # :erb:
 
+# This is a helper for your Rakefile. Read the comments for each
+# function.
+
 require 'git'
 require 'pp'
 
-# Return a list of files in a git repository _repdir_
+# Return a list of files in a git repository _repdir_.
+#
+# Add this to your gem spec:
+#
+# spec = Gem::Specification.new {|i|
+#   i.files = git_ls('.')
+# }
+#
+# What it does is just collecting the list of the files from the git
+# repository. The idea is to use that list for the gem spec. No more
+# missing or redundant files in gems!
 def git_ls(repdir, ignore_some = true)
   ignore = ['/?\.gitignore$']
 

@@ -17,7 +17,7 @@ require_relative 'test/rake_erb_templates'
 ERB_DYN_SKELETON = erb_skeletons(NAME, 'naive')
 ERB_DYN_SKELETON.each {|k, v|
   file k => [v] do |t|
-    erb_make(NAME, t.name, t.prerequisites[0])
+    erb_make(NAME, 'naive', t.name, t.prerequisites[0])
   end
 }
 

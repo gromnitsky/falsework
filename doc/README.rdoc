@@ -40,17 +40,23 @@ list::                      Do nothing except listing all available
 new NAME::                  Create a new project. It creates a directory
                             <i>NAME</i> and populates it with files.
 
-exe NAME::                  Add a new executable to an existing
-                            project. You may use this command only in
-                            the root project directory.
+The following commands works only from the root project directory:
 
-test NAME::                 Add a new minitest to an existing
-                            project. You may use this command only in
-                            the root project directory.
+exe NAME::                  Add a new executable to an existing
+                            project.
+
+test NAME::                 Add a new minitest.
+
+upgrade::                   'Inject' or upgrade some vital files from the
+                            default 'naive' template into the
+                            project. (<b>Warning:</b> this works only
+                            from version 0.2.2 and (hopefully) above.)
 
 The options are as follows:
 
 -t::                        A template name.
+
+-b::                        A batch mode. (No questions asked.)
 
 --config-dirs::             List all possible locations for the
                             configuration file. The first found wins.
