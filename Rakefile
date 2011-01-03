@@ -35,6 +35,7 @@ spec = Gem::Specification.new {|i|
   i.name = NAME
   i.version = `bin/#{i.name} -V`
   i.summary = "A primitive scaffold generator for writing CLI programs in Ruby."
+  i.description = i.summary
   i.author = 'Alexander Gromnitsky'
   i.email = 'alexander.gromnitsky@gmail.com'
   i.homepage = "http://github.com/gromnitsky/#{i.name}"

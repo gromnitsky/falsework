@@ -44,8 +44,9 @@ when 'list'
 when /exe|test/
   m = Mould.new(File.basename(Dir.pwd), $conf[:user], $conf[:email], $conf[:gecos])
   ARGV[1..-1].each {|i|
-    u.veputs(1, "Generating #{i} as... __NNL__")
-    u.veputs(1, m.create($conf[:template], ARGV[0], i) + '... __NNL__')
+    u.veputs(1, "Generating #{i}... __NNL__")
+#    u.veputs(1, m.create($conf[:template], ARGV[0], i) + '... __NNL__')
+    m.add($conf[:template], ARGV[0], i)
     u.veputs(1, 'OK')
   }
 when 'upgrade'

@@ -43,7 +43,8 @@ new NAME::                  Create a new project. It creates a directory
 The following commands works only from the root project directory:
 
 exe NAME::                  Add a new executable to an existing
-                            project.
+                            project and a corresponding <tt>.rdoc</tt>
+                            file in <tt>doc</tt> subdirectory.
 
 test NAME::                 Add a new minitest.
 
@@ -76,6 +77,7 @@ The options are as follows:
 Version & name of your project can be located at generated
 <tt>myproject/lib/myproject/meta.rb</tt> file.
 
+
 ==Examples
 
 Create a new project:
@@ -95,3 +97,17 @@ Add another test file:
  % falsework test foo
 
 (It will appear in <tt>test/</tt> sub-directory.)
+
+
+==Bugs
+
+While falsework supports symlinks in templates, rubygems replaces
+symlinks with its corresponding source files. That is why you'll get 2
+<tt>README.rdoc</tt> files in generated project when it was intended to
+have 1 in <tt>doc</tt> subdirectory and the symlink to it in the root
+project directory.
+
+If you think that this is pathetic, then just grab the source of
+falsework, place its directory somewhere, create a symlink to
+<tt>/where/is/your/clone/falsework/bin/falsework</tt> file in one of
+your PATH directories and forget about the gem and this bug.

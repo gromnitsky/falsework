@@ -4,6 +4,28 @@ require 'digest/md5'
 
 require_relative 'trestle'
 
+# Class Mould heavily uses 'naive' template. Theoretically it can manage
+# any template as long as it has files mentioned in #add.
+#
+# The directory with template may have files beginning with _#_ char
+# which will be ignored in #project_seed (a method that creates a shiny
+# new project form a template).
+#
+# If you need to run through erb not only the contents of a file in a
+# template but it name itself, then use the following convention:
+#
+# %%VARIABLE%%
+#
+# which is equivalent of erb's: <%= VARIABLE %>. See naive template
+# directory for examples.
+#
+# In the template files you may use any Mould instance variables. The
+# most usefull are:
+#
+# [@project]  A project name.
+# [@user]     Github user name.
+# [@email]    User email.
+# [@gecos]    A full user name.
 module Falsework
   class Mould
     GITCONFIG = '~/.gitconfig'
@@ -109,37 +131,55 @@ module Falsework
       r
     end
 
-    # Create an executable or a test from the _template_.
+    # Add an executable or a test from the _template_.
     #
     # [mode] Is either 'exe' or 'test'.
     # [what] A test/exe file to create.
     #
     # Return a name of a created file.
-    def create(template, mode, what)
+    def add(template, mode, what)
       start = Mould.templates[template || TEMPLATE_DEFAULT] || Trestle.errx(1, "no such template: #{template}")
+      r = []
 
-      t = case mode
-          when 'exe'
-            to = ["bin/#{what}", true]
-            start + '/' + 'bin/%%@project%%.erb'
-          when 'test'
-            to = ["#{mode}/test_#{what}.rb", false]
-            start + '/' + 'test/test_%%@project%%.rb.erb'
-          else
-            fail "invalid mode #{mode}"
-          end
-      Mould.extract(t, binding, to[0])
-      File.chmod(0744, to[0]) if to[1]
-      return to[0]
+      case mode
+      when 'exe'
+        # script
+        f = {}
+        f[:from] = start + '/' + 'bin/%%@project%%.erb'
+        f[:exe] = true
+        f[:to] = "bin/#{what}"
+        r << f
+
+        # doc (reading an 'ignored' file from the template)
+        f = {}
+        f[:from] = start + '/' + 'doc/#util.rdoc.erb'
+        f[:exe] = false
+        f[:to] = "doc/#{what}.rdoc"
+        r << f
+      when 'test'
+        f = {}
+        f[:from] = start + '/' + 'test/test_%%@project%%.rb.erb'
+        f[:exe] = false
+        f[:to] = "#{mode}/test_#{what}.rb"
+        r << f
+      else
+        fail "invalid mode #{mode}"
+      end
+
+      r.each {|i|
+        Mould.extract(i[:from], binding, i[:to])
+        File.chmod(0744, i[:to]) if i[:exe]
+      }
     end
     
     # Walk through a directory tree, executing a block for each file or
-    # directory.
+    # directory. Ignores _._, _.._ and files starting with _#_
+    # character.
     #
     # [start] The directory to start with.
     def self.traverse(start, &block)
-      l = Dir.glob(start + '/*', File::FNM_DOTMATCH).delete_if {
-        |i| i.match /\/?\.\.?$/
+      l = Dir.glob(start + '/*', File::FNM_DOTMATCH).delete_if {|i|
+        i.match(/\/?\.\.?$/) || i.match(/^#|\/#/)
       }
       # stop if directory is empty (contains only . and ..)
       return if l.size == 0

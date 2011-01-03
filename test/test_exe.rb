@@ -64,6 +64,7 @@ class TestFalsework < MiniTest::Unit::TestCase
     r = Trestle.cmd_run "../../#{CMD} exe qqq"
     assert_equal(0, r[0])
     assert_equal(true, File.executable?('bin/qqq'))
+    assert_equal(true, File.exist?('doc/qqq.rdoc'))
 
     r = Trestle.cmd_run "../../#{CMD} test qqq"
     assert_equal(0, r[0])
