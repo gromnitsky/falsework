@@ -1,6 +1,9 @@
 module Falsework
   module Meta
     NAME = 'falsework'
-    VERSION = '0.2.3'
+    VERSION = '0.2.4'
+    AUTHOR = 'Alexander Gromnitsky'
+    EMAIL = 'alexander.gromnitsky@gmail.com'
+    HOMEPAGE = 'http://github.com/gromnitsky/' + NAME
   end
 end

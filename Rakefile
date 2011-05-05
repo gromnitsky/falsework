@@ -6,18 +6,20 @@ require 'rake/clean'
 require 'rake/rdoctask'
 require 'rake/testtask'
 
+require_relative 'lib/falsework/meta'
+include Falsework
+
 require_relative 'test/rake_git'
-NAME = 'falsework'
 
 #
 # Generate dynamic targets
 #
 require_relative 'test/rake_erb_templates'
 
-ERB_DYN_SKELETON = erb_skeletons(NAME, 'naive')
+ERB_DYN_SKELETON = erb_skeletons(Meta::NAME, 'naive')
 ERB_DYN_SKELETON.each {|k, v|
   file k => [v] do |t|
-    erb_make(NAME, 'naive', t.name, t.prerequisites[0])
+    erb_make(Meta::NAME, 'naive', t.name, t.prerequisites[0])
   end
 }
 
@@ -32,20 +34,20 @@ CLOBBER.concat ERB_DYN_SKELETON.keys
 #
 
 spec = Gem::Specification.new {|i|
-  i.name = NAME
+  i.name = Meta::NAME
   i.version = `bin/#{i.name} -V`
-  i.summary = "A primitive scaffold generator for writing CLI programs in Ruby."
-  i.description = i.summary
-  i.author = 'Alexander Gromnitsky'
-  i.email = 'alexander.gromnitsky@gmail.com'
-  i.homepage = "http://github.com/gromnitsky/#{i.name}"
+  i.summary = "A primitive scaffold generator for writing CLI programs in Ruby"
+  i.description = i.summary + '.'
+  i.author = Meta::AUTHOR
+  i.email = Meta::EMAIL
+  i.homepage = Meta::HOMEPAGE
+  
   i.platform = Gem::Platform::RUBY
   i.required_ruby_version = '>= 1.9.2'
   i.files = git_ls('.')
   i.files.concat ERB_DYN_SKELETON.keys.map {|i| i.sub(/#{Dir.pwd}\//, '') }
 
   i.executables = FileList['bin/*'].gsub(/^bin\//, '')
-  i.default_executable = i.name
   
   i.test_files = FileList['test/test_*.rb']
   
