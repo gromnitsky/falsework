@@ -1,14 +1,13 @@
 require_relative 'helper'
 
 class TestFalsework < MiniTest::Unit::TestCase
-  CMD = cmd('falsework') # get path to the exe & cd to tests directory
-  
   def setup
     # this runs every time before test_*
+    @cmd = cmd('falsework') # get path to the exe & cd to tests directory
   end
 
   def test_project_list
-    r = Trestle.cmd_run "#{CMD} list"
+    r = Trestle.cmd_run "#{@cmd} list"
     assert_equal(0, r[0])
     assert_match(/naive\n/, r[2])
   end
@@ -21,7 +20,7 @@ class TestFalsework < MiniTest::Unit::TestCase
   
   def test_project_new
     rm_rf 'templates/foo'
-    r = Trestle.cmd_run "#{CMD} new templates/foo -v"
+    r = Trestle.cmd_run "#{@cmd} new templates/foo -v"
 #    pp r
     assert_equal(0, r[0], r)
 
@@ -32,6 +31,7 @@ class TestFalsework < MiniTest::Unit::TestCase
 
     tree = ["templates/foo/.git",
             "templates/foo/.gitignore",
+            "templates/foo/Gemfile",
             "templates/foo/README.rdoc",
             "templates/foo/Rakefile",
             "templates/foo/bin",
@@ -61,35 +61,35 @@ class TestFalsework < MiniTest::Unit::TestCase
     origdir = pwd
     cd 'templates/foo'
 
-    r = Trestle.cmd_run "../../#{CMD} exe qqq"
+    r = Trestle.cmd_run "#{@cmd} exe qqq"
     assert_equal(0, r[0])
     assert_equal(true, File.executable?('bin/qqq'))
     assert_equal(true, File.exist?('doc/qqq.rdoc'))
 
-    r = Trestle.cmd_run "../../#{CMD} test qqq"
+    r = Trestle.cmd_run "#{@cmd} test qqq"
     assert_equal(0, r[0])
     assert_equal(true, File.exist?('test/test_qqq.rb'))
 
     # upgrade
-    r = Trestle.cmd_run "../../#{CMD} upgrade -b"
+    r = Trestle.cmd_run "#{@cmd} upgrade -b"
     assert_equal(0, r[0])
     rm ['test/helper_trestle.rb', 'test/rake_git.rb']
-    r = Trestle.cmd_run "../../#{CMD} upgrade -b"
+    r = Trestle.cmd_run "#{@cmd} upgrade -b"
     assert_equal(0, r[0])
     sed 'test/helper_trestle.rb',
     /^(# Don't.+falsework\/)\d+\.\d+\.\d+(\/.+)$/, '\1999.999.999\2'
-    r = Trestle.cmd_run "../../#{CMD} upgrade -b"
+    r = Trestle.cmd_run "#{@cmd} upgrade -b"
     assert_equal(1, r[0])
     assert_match(/file .+ is from .+ falsework: 999.999.999/, r[1])
     mv('test', 'ttt')
-    r = Trestle.cmd_run "../../#{CMD} upgrade -b"
+    r = Trestle.cmd_run "#{@cmd} upgrade -b"
     assert_equal(0, r[0])
     
     cd origdir
   end
 
   def test_project_invalid_name
-    r = Trestle.cmd_run "#{CMD} new 123"
+    r = Trestle.cmd_run "#{@cmd} new 123"
     assert_equal(1, r[0])
     assert_match(/project name cannot start with a digit/, r[1])
   end

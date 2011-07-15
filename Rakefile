@@ -1,10 +1,12 @@
 # -*-ruby-*-
 
 require 'rake'
-require 'rake/gempackagetask'
 require 'rake/clean'
-require 'rake/rdoctask'
 require 'rake/testtask'
+require 'rubygems/package_task'
+
+gem 'rdoc'
+require 'rdoc/task'
 
 require_relative 'lib/falsework/meta'
 include Falsework
@@ -55,14 +57,14 @@ spec = Gem::Specification.new {|i|
   i.extra_rdoc_files = FileList['doc/*']
 
   i.add_dependency('git', '>=  1.2.5')
-  i.add_dependency('open4', '>= 1.0.1')
+  i.add_dependency('open4', '>= 1.1.0')
 }
 
-Rake::GemPackageTask.new(spec).define
+Gem::PackageTask.new(spec).define
 
 task default: [:naive, :repackage]
 
-Rake::RDocTask.new('doc') do |i|
+RDoc::Task.new('html') do |i|
   i.main = 'doc/README.rdoc'
   i.rdoc_files = FileList['doc/*', 'lib/**/*.rb']
   i.rdoc_files.exclude("lib/**/templates")

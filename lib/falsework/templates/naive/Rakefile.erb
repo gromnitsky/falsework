@@ -1,10 +1,12 @@
 # -*-ruby-*-
 
 require 'rake'
-require 'rake/gempackagetask'
 require 'rake/clean'
-require 'rake/rdoctask'
 require 'rake/testtask'
+require 'rubygems/package_task'
+
+gem 'rdoc'
+require 'rdoc/task'
 
 require_relative 'lib/<%= @project %>/meta'
 include <%= @project.capitalize %>
@@ -31,21 +33,20 @@ spec = Gem::Specification.new {|i|
   i.rdoc_options << '-m' << 'doc/README.rdoc'
   i.extra_rdoc_files = FileList['doc/*']
 
-  i.add_dependency('open4', '>= 1.0.1')
+  i.add_dependency('open4', '>= 1.1.0')
   i.add_development_dependency('git', '>= 1.2.5')
 }
 
-Rake::GemPackageTask.new(spec).define
+Gem::PackageTask.new(spec).define
 
 task default: [:repackage]
 
-Rake::RDocTask.new('doc') {|i|
+RDoc::Task.new('html') do |i|
   i.main = 'doc/README.rdoc'
   i.rdoc_files = FileList['doc/*', 'lib/**/*.rb']
 #  i.rdoc_files.exclude("lib/**/some-nasty-staff")
-}
+end
 
-Rake::TestTask.new {|i|
+Rake::TestTask.new do |i|
   i.test_files = FileList['test/test_*.rb']
-  i.libs << '.'
-}
+end

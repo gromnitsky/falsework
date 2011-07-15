@@ -89,7 +89,7 @@ module Falsework
       end
 
       if @conf[:verbose] >= level
-        nnl ? print(t) : puts(t)
+        nnl ? print(t) : print("#{t}\n")
         STDOUT.flush
       end
     end
@@ -188,10 +188,10 @@ module Falsework
           puts Meta::VERSION
           exit 0
         }
-        o.on('--config NAME', "Set a config name (default is #{@conf[:config]})") {|i|
+        o.on('--config NAME', "Set a config name (default is #{@conf[:config]}).") {|i|
           @conf[:config] = i
         }
-        o.on('--config-dirs', 'Show possible config locations') {
+        o.on('--config-dirs', 'Show possible config locations.') {
           @conf[:config_dirs].each { |j|
             f = j + '/' + @conf[:config]
             puts (File.readable?(f) ? '* ' : '  ') +  f

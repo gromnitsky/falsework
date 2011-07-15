@@ -7,23 +7,20 @@ include FileUtils
 require_relative '../lib/falsework/trestle'
 include Falsework
 
-# don't run tests automatically if they were invoked as 'gem check -t ...'
-if $0 =~ /gem/
-  require 'minitest/unit'
-else
-  require 'minitest/autorun'
-end
+require 'minitest/autorun'
 
-# Return the right directory for (probably executable) _c_.
+# Return an absolute path of a _c_.
 def cmd(c)
   case File.basename(Dir.pwd)
   when Meta::NAME.downcase
     # test probably is executed from the Rakefile
     Dir.chdir('test')
+    STDERR.puts('*** chdir to ' + Dir.pwd)
   when 'test'
     # we are in the test directory, there is nothing special to do
   else
     # tests were invoked by 'gem check -t falsework'
+    # (for a classic rubygems 1.3.7)
     begin
       Dir.chdir(Trestle.gem_libdir + '/../../test')
     rescue
@@ -31,5 +28,5 @@ def cmd(c)
     end
   end
 
-  '../bin/' + c
+  File.absolute_path('../bin/' + c)
 end
