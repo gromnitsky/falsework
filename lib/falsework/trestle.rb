@@ -25,7 +25,7 @@ module Falsework
 
     # Return a directory with program libraries.
     def self.gem_libdir
-      t = ["#{File.dirname(File.expand_path($0))}/../lib/#{Falsework::Meta::NAME}",
+      t = ["#{File.dirname(File.realpath($0))}/../lib/#{Falsework::Meta::NAME}",
            "#{Gem.dir}/gems/#{Falsework::Meta::NAME}-#{Falsework::Meta::VERSION}/lib/#{Falsework::Meta::NAME}",
            "lib/#{Falsework::Meta::NAME}"]
       t.each {|i| return i if File.readable?(i) }
@@ -66,7 +66,7 @@ module Falsework
       @conf[:banner] = "Usage: #{File.basename($0)} [options]"
       @conf[:config] =  Meta::NAME + '.yaml'
       @conf[:config_dirs] =  [ENV['HOME']+'/.'+Meta::NAME,
-                              File.absolute_path("#{File.dirname(File.expand_path($0))}/../etc"),
+                              File.absolute_path("#{File.dirname(File.realpath($0))}/../etc"),
                               '/usr/etc', '/usr/local/etc', '/etc',
                               "#{Gem.dir}/gems/#{Meta::NAME}-#{Meta::VERSION}/etc"
                              ]
@@ -208,6 +208,12 @@ module Falsework
       rescue
         Trestle.errx(1, $!.to_s)
       end
+    end
+
+    # A handy proc that return a nice formatted current global
+    # backtrace.
+    def self.get_backtrace
+      "#{$!}\n\nBacktrace:\n\n#{$!.backtrace.join("\n")}"
     end
     
   end # trestle

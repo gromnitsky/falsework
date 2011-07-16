@@ -1,3 +1,9 @@
+=== 0.2.7
+
+Sun Jul 17 01:23:32 EEST 2011
+
+- Fixed a bug with symlinks in Trestle.gem_libdir.
+
 === 0.2.6
 
 Fri Jul 15 20:07:45 EEST 2011
