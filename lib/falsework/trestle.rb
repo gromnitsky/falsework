@@ -43,13 +43,13 @@ module Falsework
 
     # Print an error message _t_ and exit if _ec_ > 0.
     def self.errx(ec, t)
-      STDERR.puts File.basename($0) + ' error: ' + t.to_s
+      $stderr.puts File.basename($0) + ' error: ' + t.to_s
       exit ec if ec > 0
     end
 
     # Print a warning.
     def self.warnx(t)
-      STDERR.puts File.basename($0) + ' warning: ' + t.to_s
+      $stderr.puts File.basename($0) + ' warning: ' + t.to_s
     end
 
     # #veputs uses this to decide to put a newline or not to put.
@@ -90,7 +90,7 @@ module Falsework
 
       if @conf[:verbose] >= level
         nnl ? print(t) : print("#{t}\n")
-        STDOUT.flush
+        $stdout.flush
       end
     end
     
@@ -194,7 +194,7 @@ module Falsework
         o.on('--config-dirs', 'Show possible config locations.') {
           @conf[:config_dirs].each { |j|
             f = j + '/' + @conf[:config]
-            puts (File.readable?(f) ? '* ' : '  ') +  f
+            puts((File.readable?(f) ? '* ' : '  ') + f)
           }
           exit 0
         }

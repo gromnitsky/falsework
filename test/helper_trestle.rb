@@ -15,7 +15,7 @@ def cmd(c)
   when Meta::NAME.downcase
     # test probably is executed from the Rakefile
     Dir.chdir('test')
-    STDERR.puts('*** chdir to ' + Dir.pwd)
+    $stderr.puts('*** chdir to ' + Dir.pwd)
   when 'test'
     # we are in the test directory, there is nothing special to do
   else
