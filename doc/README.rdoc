@@ -49,7 +49,7 @@ exe NAME::                  Add a new executable to an existing
 test NAME::                 Add a new minitest.
 
 upgrade::                   'Inject' or upgrade some vital files from the
-                            default 'naive' template into the
+                            default 'ruby-naive' template into the
                             project. (<b>Warning:</b> this works only
                             from version 0.2.2 and (hopefully) above.)
 

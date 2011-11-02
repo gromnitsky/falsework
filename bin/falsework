@@ -6,11 +6,11 @@ require_relative '../lib/falsework/mould'
 include Falsework
 
 $conf = Hash.new
-u = Trestle.new($conf)
+$t = Trestle.new($conf)
 
 $conf[:banner] = <<EOF
 Usage: #{File.basename($0)} [options] command ...
-Available commands: list, new NAME, exe NAME, test NAME or upgrade.
+Available commands: list, new NAME, exe NAME, doc NAME, test NAME or upgrade.
 EOF
 $conf[:user] = nil
 $conf[:gecos] = nil
@@ -18,16 +18,32 @@ $conf[:email] = nil
 $conf[:template] = nil
 $conf[:batch] = false
 
+def add_files(mode, files)
+  r = true
+  m = Mould.new(File.basename(Dir.pwd), $conf[:template],
+                $conf[:user], $conf[:email], $conf[:gecos])
+  files.each {|i|
+    created = m.add(mode, i)
+    if created.size > 0
+      created.each {|idx| $t.veputs(1, idx) }
+    else
+      r = false
+    end
+  }
+
+  r
+end
+
 # --[ main ]------------------------------------------------------------
 
-u.config_parse(['foobar']) {|src|
-  o = u.cl_parse(src) # create an OptionParser object
+$t.config_parse(['foobar']) {|src|
+  o = $t.cl_parse(src) # create an OptionParser object
   o.on('--user STR', 'Github user') {|i| $conf[:user] = i}
   o.on('--gecos STR', 'A gecos-like string') {|i| $conf[:gecos] = i}
   o.on('--email STR') {|i| $conf[:email] = i}
   o.on('-t NAME', 'A template name') {|i| $conf[:template] = i}
   o.on('-b', 'Run in a batch mode, don\'t ask any questions') { $conf[:batch] = true}
-  u.cl_parse(src, o) # run cl parser
+  $t.cl_parse(src, o) # run cl parser
 }
 
 Trestle.errx(1, $conf[:banner]) if (ARGV.size < 2 && ARGV[0] !~ /list|upgrade/)
@@ -40,20 +56,21 @@ end
 
 case ARGV[0]
 when 'list'
-  Mould.templates.each_key {|i| puts(i)}
-when /exe|test/
-  m = Mould.new(File.basename(Dir.pwd), $conf[:user], $conf[:email], $conf[:gecos])
-  ARGV[1..-1].each {|i|
-    u.veputs(1, "Generating #{i}... __NNL__")
-#    u.veputs(1, m.create($conf[:template], ARGV[0], i) + '... __NNL__')
-    m.add($conf[:template], ARGV[0], i)
-    u.veputs(1, 'OK')
-  }
+  Mould.templates.each {|k, v| puts "#{k}\t#{v}"}
+  
+when /exe|doc|test/
+  r1 = add_files ARGV[0], ARGV[1..-1]
+  r2 = true
+  (r2 = add_files 'doc', ARGV[1..-1]) if ARGV[0] == 'exe'
+  exit 1 if !r1 || !r2
+  
 when 'upgrade'
-  m = Mould.new(File.basename(Dir.pwd), $conf[:user], $conf[:email], $conf[:gecos])
+  m = Mould.new(File.basename(Dir.pwd), $conf[:template],
+                $conf[:user], $conf[:email], $conf[:gecos])
   m.verbose = true if $conf[:verbose] > 0
   m.batch = $conf[:batch]
-  m.upgrade($conf[:template]) rescue Trestle.errx(1, $!.to_s)
+  m.upgrade() rescue Trestle.errx(1, $!.to_s)
+
 when 'new'
   if File.dirname(ARGV[1]) != '.'
     Dir.chdir(File.dirname(ARGV[1])) rescue Trestle.errx(1, "cannot chdir to '#{File.dirname(ARGV[1])}'")
@@ -61,17 +78,19 @@ when 'new'
   end
   Trestle.errx(1, 'project name cannot start with a digit') if ARGV[1].strip[0] =~ /\d/
 
-  m = Mould.new(ARGV[1], $conf[:user], $conf[:email], $conf[:gecos])
+  m = Mould.new(ARGV[1], $conf[:template],
+                $conf[:user], $conf[:email], $conf[:gecos])
   m.verbose = true if $conf[:verbose] > 0
-  m.project_seed($conf[:template], nil)
+  m.project_seed(nil)
 
   # create a git repository
   Dir.chdir ARGV[1]
-  u.veputs(1, "Creating a git repository in #{Dir.pwd}... __NNL__")
+  $t.veputs(1, "Creating a git repository in #{Dir.pwd}... __NNL__")
   g = Git.init
   g.add('.')
   g.commit("Initial import from #{Falsework::Meta::NAME} #{Falsework::Meta::VERSION}.")
-  u.veputs(1, 'OK')
+  $t.veputs(1, 'OK')
+  
 else
   Trestle.errx(1, "unknown command: " + ARGV[0])
 end

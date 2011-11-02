@@ -9,7 +9,7 @@ class TestFalsework < MiniTest::Unit::TestCase
   def test_project_list
     r = Trestle.cmd_run "#{@cmd} list"
     assert_equal(0, r[0])
-    assert_match(/naive\n/, r[2])
+    assert_match(/ruby-naive\n/, r[2])
   end
 
   # very silly analogue of "sed -i'' -E 's/foo/bar/g' file"

@@ -1,0 +1,15 @@
+---
+:exe:
+- :src: 'bin/%%@project%%.erb'
+  :dest: 'bin/%s'
+  :mode_int: 0744
+
+:doc:
+- :src: 'doc/#doc.rdoc.erb'
+  :dest: 'doc/%s.rdoc'
+  :mode_int: null
+
+:test:
+- :src: 'test/test_%%@project%%.rb.erb'
+  :dest: 'test/test_%s.rb'
+  :mode_int: null

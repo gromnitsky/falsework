@@ -4,8 +4,8 @@ require 'digest/md5'
 
 require_relative 'trestle'
 
-# Class Mould heavily uses 'naive' template. Theoretically it can manage
-# any template as long as it has files mentioned in #add.
+# Class Mould heavily uses 'ruby-naive' template. Theoretically it can
+# manage any template as long as it has files mentioned in #add.
 #
 # The directory with template may have files beginning with _#_ char
 # which will be ignored in #project_seed (a method that creates a shiny
@@ -16,8 +16,8 @@ require_relative 'trestle'
 #
 # %%VARIABLE%%
 #
-# which is equivalent of erb's: <%= VARIABLE %>. See naive template
-# directory for examples.
+# which is equivalent of erb's: <%= VARIABLE %>. See 'ruby-naive'
+# template directory for examples.
 #
 # In the template files you may use any Mould instance variables. The
 # most usefull are:
@@ -31,14 +31,37 @@ module Falsework
     GITCONFIG = '~/.gitconfig'
     TEMPLATE_DIRS = [Trestle.gem_libdir + '/templates',
                      File.expand_path('~/.' + Meta::NAME + '/templates')]
-    TEMPLATE_DEFAULT = 'naive'
+    TEMPLATE_DEFAULT = 'ruby-naive'
+    TEMPLATE_CONFIG = '#config.yaml'
     IGNORE_FILES = ['.gitignore']
 
     attr_accessor :verbose, :batch
     
-    def initialize(project, user = nil, email = nil, gecos = nil)
+    def initialize(project, template, user = nil, email = nil, gecos = nil)
       @verbose = false
       @batch = false
+      @template = template
+      @dir_t = Mould.templates[@template || TEMPLATE_DEFAULT] || Trestle.errx(1, "no such template: #{template}")
+
+      # default config
+      @conf = {
+        exe: [{
+                src: nil,
+                dest: 'bin/%s',
+                mode_int: 0744
+              }],
+        doc: [{
+                src: nil,
+                dest: 'doc/%s.rdoc',
+                mode_int: nil
+              }],
+        test: [{
+                 src: nil,
+                 dir: 'test/test_%s.rb',
+                 mode_int: nil
+               }]
+      }
+      Mould.config_parse(@dir_t + '/' + TEMPLATE_CONFIG, [], @conf)
       
       gc = Git.global_config rescue gc = {}
       @project = project
@@ -65,14 +88,13 @@ module Falsework
       r
     end
 
-    # Generate a new project in @project directory from _template_.
+    # Generate a new project in @project directory from @template.
     #
-    # [template] If it's nil TEMPLATE_DEFAULT will be used.
     # [filter]   A regexp for matching particular files in the
     #            template directory.
     #
     # Return false if nothing was extracted.
-    def project_seed(template, filter)
+    def project_seed(filter)
       sl = ->(is_dir, *args) {
         is_dir ? Mould.erb_fname(*args) : Mould.erb_fname(*args).sub(/\.erb$/, '')
       }
@@ -88,29 +110,26 @@ module Falsework
       Dir.chdir @project
 
       r = false
-      start = Mould.templates[template || TEMPLATE_DEFAULT] || Trestle.errx(1, "no such template: #{template}")
-      puts "Template: #{start}" if @verbose
+      puts "Template: #{@dir_t}" if @verbose
       symlinks = []
-      Mould.traverse(start) {|i|
-        file = i.sub(/^#{start}\//, '')
+      Mould.traverse(@dir_t) {|i|
+        file = i.sub(/^#{@dir_t}\//, '')
         next if filter ? file =~ filter : false
         next if IGNORE_FILES.index {|ign| file.match(/#{ign}$/) }
 
         if File.symlink?(i)
           # we'll process them later on
-          is_dir = File.directory?(start + '/' + File.readlink(i))
+          is_dir = File.directory?(@dir_t + '/' + File.readlink(i))
           symlinks << [sl.call(is_dir, File.readlink(i), binding),
                        sl.call(is_dir, file, binding)]
         elsif File.directory?(i)
           puts("D: #{file}") if @verbose
           file = Mould.erb_fname(file, binding)
-#          FileUtils.mkdir_p(prjdir + '/' + file)
           Dir.mkdir(prjdir + '/' + file)
-          Dir.chdir(prjdir + '/' + file)
         else
           puts("N: #{file}") if @verbose
-          to = File.basename(Mould.erb_fname(file, binding), '.erb')
-          Mould.extract(start + '/' + file, binding, to)
+          to = Mould.erb_fname(file, binding).sub(/\.erb$/, '')
+          Mould.extract(@dir_t + '/' + file, binding, to)
           # make files in bin/ executable
           File.chmod(0744, to) if file =~ /bin\//
         end
@@ -131,45 +150,59 @@ module Falsework
       r
     end
 
-    # Add an executable or a test from the _template_.
+    # Parse a config. Return false on error.
     #
-    # [mode] Is either 'exe' or 'test'.
-    # [what] A test/exe file to create.
-    #
-    # Return a name of a created file.
-    def add(template, mode, what)
-      start = Mould.templates[template || TEMPLATE_DEFAULT] || Trestle.errx(1, "no such template: #{template}")
-      r = []
-
-      case mode
-      when 'exe'
-        # script
-        f = {}
-        f[:from] = start + '/' + 'bin/%%@project%%.erb'
-        f[:exe] = true
-        f[:to] = "bin/#{what}"
-        r << f
-
-        # doc (reading an 'ignored' file from the template)
-        f = {}
-        f[:from] = start + '/' + 'doc/#util.rdoc.erb'
-        f[:exe] = false
-        f[:to] = "doc/#{what}.rdoc"
-        r << f
-      when 'test'
-        f = {}
-        f[:from] = start + '/' + 'test/test_%%@project%%.rb.erb'
-        f[:exe] = false
-        f[:to] = "#{mode}/test_#{what}.rb"
-        r << f
+    # [file] A file to parse.
+    # [rvars] A list of variable names which must be in the config.
+    # [hash] a hash to merge results with
+    def self.config_parse(file, rvars, hash)
+      r = true
+      
+      if File.readable?(file)
+        begin
+          myconf = YAML.load_file(file)
+        rescue
+          Trestle.warnx "cannot parse #{file}: #{$!}"
+          return false
+        end
+        rvars.each { |i|
+          Trestle.warnx "missing or nil '#{i}' in #{file}" if ! myconf.key?(i.to_sym) || ! myconf[i.to_sym]
+          r = false
+        }
+        
+        hash.merge!(myconf) if r && hash
       else
-        fail "invalid mode #{mode}"
+        r = false
       end
+      
+      r
+    end
+    
+    # Add an executable or a test from the template.
+    #
+    # [mode] Is either 'exe', 'doc' or 'test'.
+    # [target] A test/exe file to create.
+    #
+    # Return a list of a created files.
+    def add(mode, target)
+      created = []
 
-      r.each {|i|
-        Mould.extract(i[:from], binding, i[:to])
-        File.chmod(0744, i[:to]) if i[:exe]
+      return [] unless @conf[mode.to_sym][0][:src]
+
+      @conf[mode.to_sym].each {|idx|
+        to = idx[:dest] % target
+
+        begin
+          Mould.extract(@dir_t + '/' + idx[:src], binding, to)
+          File.chmod(idx[:mode_int], to) if idx[:mode_int]
+        rescue
+          Trestle.warnx "failed to create '#{to}' (check your #config.yaml): #{$!}"
+        else
+          created << to
+        end
       }
+
+      created
     end
     
     # Walk through a directory tree, executing a block for each file or
@@ -202,7 +235,7 @@ module Falsework
 #        pp t.result
         md5_system = Digest::MD5.hexdigest(t.result(bin))
       rescue Exception
-        Trestle.errx(1, "cannot read the template file: #{$!}")
+        Trestle.errx(1, "bogus template file '#{path}': #{$!}")
       end
 
       skeleton = to || File.basename(path, '.erb')
@@ -228,16 +261,16 @@ module Falsework
     end
     
 
-    # Search for all files in the _template_ for the line
+    # Search for all files in the template directory the line
     #
     # /^..? :erb:/
     #
     # in first n lines. If the line is found, the file is considered a
     # candidate for an upgrade. Return a hash {target:template}
-    def upgradable_files(template)
+    def upgradable_files()
       line_max = 4
       r = {}
-      Falsework::Mould.traverse(template) {|i|
+      Falsework::Mould.traverse(@dir_t) {|i|
         next if File.directory?(i)
         next if File.symlink?(i) # hm...
 
@@ -245,7 +278,7 @@ module Falsework
           n = 0
           while n < line_max && line = fp.gets
             if line =~ /^..? :erb:/
-              t = i.sub(/#{template}\//, '')
+              t = i.sub(/#{@dir_t}\//, '')
               r[Mould.erb_fname(t, binding).sub(/\.erb$/, '')] = i
               break
             end
@@ -276,11 +309,10 @@ module Falsework
     #
     # Neithe we do check for a content of upgradable files nor try to
     # merge old with new. (Why?)
-    def upgrade(template)
+    def upgrade()
       # 0. search for 'new' files in the template
-      t = Mould.templates[template || TEMPLATE_DEFAULT] || Trestle.errx(1, "no such template: #{template}")
-      uf = upgradable_files(t)
-      fail "template #{template} cannot offer to you files for an upgrade" if uf.size == 0
+      uf = upgradable_files
+      fail "template #{@template} cannot offer you files for the upgrade" if uf.size == 0
  #     pp uf
       
       # 1. analyse 'old' files
@@ -293,10 +325,10 @@ module Falsework
           File.open(k) {|fp|
             is_versioned = false
             while line = fp.gets
-              if line =~ /^# Don't remove this: falsework\/(#{Gem::Version::VERSION_PATTERN})\/(\w+)\/.+/
+              if line =~ /^# Don't remove this: falsework\/(#{Gem::Version::VERSION_PATTERN})\/(.+)\/.+/
                 is_versioned = true
-                if $3 != (template || TEMPLATE_DEFAULT)
-                  fail "file #{k} is from #{$3} template"
+                if $3 != (@template || TEMPLATE_DEFAULT)
+                  fail "file #{k} is from '#{$3}' template"
                 end
                 if Gem::Version.new(Meta::VERSION) >= Gem::Version.new($1)
 #                  puts "#{k}: #{$1}"
@@ -312,7 +344,7 @@ module Falsework
           }
         end
       }
-      fail "template #{template || TEMPLATE_DEFAULT} cannot find files for an upgrade" if u.size == 0
+      fail "template #{@template || TEMPLATE_DEFAULT} cannot find files for an upgrade" if u.size == 0
 
       # 2. ask user for a commitment
       if ! @batch

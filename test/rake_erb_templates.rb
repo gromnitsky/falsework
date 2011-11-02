@@ -57,4 +57,4 @@ def erb_make(local_prj, template, target, tmplt)
 end
 
 
-pp erb_skeletons(Falsework::Meta::NAME, 'naive') if __FILE__ == $0
+pp erb_skeletons(Falsework::Meta::NAME, 'ruby-naive') if __FILE__ == $0

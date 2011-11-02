@@ -6,7 +6,7 @@ require_relative '../lib/<%= @project %>/trestle.rb'
 include <%= @project.capitalize %>
 
 $conf = Hash.new
-u = Trestle.new($conf)
+$t = Trestle.new($conf)
 
 $conf[:banner] = "Usage: #{File.basename($0)} [options] hren'"
 $conf[:foobar] = ''
@@ -14,12 +14,12 @@ $conf[:foobar] = ''
 
 # --[ main ]------------------------------------------------------------
 
-u.config_parse(['foobar']) {|src|
-  o = u.cl_parse(src) # create an OptionParser object
+$t.config_parse(['foobar']) {|src|
+  o = $t.cl_parse(src) # create an OptionParser object
   o.on('--foobar STR', 'An example of the option --foobar') {|i|
     $conf[:foobar] = i
   }
-  u.cl_parse(src, o) # run cl parser
+  $t.cl_parse(src, o) # run cl parser
 }
 
 # print our env

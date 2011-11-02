@@ -18,14 +18,14 @@ require_relative 'test/rake_git'
 #
 require_relative 'test/rake_erb_templates'
 
-ERB_DYN_SKELETON = erb_skeletons(Meta::NAME, 'naive')
+ERB_DYN_SKELETON = erb_skeletons(Meta::NAME, 'ruby-naive')
 ERB_DYN_SKELETON.each {|k, v|
   file k => [v] do |t|
-    erb_make(Meta::NAME, 'naive', t.name, t.prerequisites[0])
+    erb_make(Meta::NAME, 'ruby-naive', t.name, t.prerequisites[0])
   end
 }
 
-desc "Generate some erb templates for naive template"
+desc "Generate some erb templates for ruby-naive template"
 task naive: ERB_DYN_SKELETON.keys
 
 CLOBBER.concat ERB_DYN_SKELETON.keys
