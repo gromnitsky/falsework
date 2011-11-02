@@ -1,7 +1,10 @@
 -*-text-*-
 
 - more templates (a lighter one?)
+
 - write a small tutorial 'how to write a template'
+
 - release to rubygems.org (it must run test, pull to github, tag, create
   gem & upload it)
 
+- describe c-glib template

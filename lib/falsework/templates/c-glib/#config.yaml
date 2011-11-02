@@ -1,0 +1,18 @@
+---
+:exe:
+- :src: 'src/#exe.h.erb'
+  :dest: 'src/%s.h'
+  :mode_int: null
+- :src: 'src/#exe.c.erb'
+  :dest: 'src/%s.c'
+  :mode_int: null
+
+:doc:
+- :src: 'doc/#doc.ascii.erb'
+  :dest: 'doc/%s.1.asciidoc'
+  :mode_int: null
+
+:test:
+- :src: 'test/#test.c.erb'
+  :dest: 'test/test_%s.c'
+  :mode_int: null

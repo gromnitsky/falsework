@@ -1,7 +1,6 @@
 =Name
 
-falsework--A primitive scaffold generator for writing CLI programs in
-Ruby.
+falsework--A primitive scaffold generator for writing CLI programs.
 
 
 ==Synopsis
@@ -11,14 +10,28 @@ Ruby.
 
 ==Description
 
-The falsework utility generates a scaffold which have:
+The falsework utility ships with 2 templates: <tt>ruby-naive</tt> and
+<tt>c-glib</tt>.
+
+Initially the template spec was designed only for Ruby projects but
+later (from version 1.3.0) hard-coded Ruby staff was removed which added
+more flexibility.
+
+The generated project <b>is not dependent</b> on falsework. The utility
+can also add skeletons for tests end executables <i>after</i> the
+project generation.
+
+
+==Ruby Template
+
+... is default. It generates a scaffold which have:
 
 * auto-created git (but not github) project;
 
-* <tt>gem</tt> (a file list is pulled from the git repository, no more
-  missing files in gems!), <tt>doc</tt>, <tt>test</tt> targers;
+* <tt>gem</tt> (a file list is pulled from the git repository, <b>no more
+  missing files in gems!</b>), <tt>doc</tt>, <tt>test</tt> targets;
 
-* easy to use configuraton parser/loader. This includes scanning for:
+* easy to use configuration parser/loader. This includes scanning for:
 
   * env variable(s);
   * the flat YAML configuration file;
@@ -26,10 +39,11 @@ The falsework utility generates a scaffold which have:
 
 * an ability to pick up a user name & an email for a github project.
 
-The generated project <b>is not dependent</b> on falsework.
+Version & name of your project can be located at generated
+<tt>myproject/lib/myproject/meta.rb</tt> file.
 
-The utility can also add skeletons for tests end executables
-<i>after</i> the project generation.
+
+==Options
 
 The commands:
 
@@ -43,15 +57,18 @@ new NAME::                  Create a new project. It creates a directory
 The following commands works only from the root project directory:
 
 exe NAME::                  Add a new executable to an existing
-                            project and a corresponding <tt>.rdoc</tt>
-                            file in <tt>doc</tt> subdirectory.
+                            project and a corresponding doc in
+                            <tt>doc</tt> sub-directory.
 
-test NAME::                 Add a new minitest.
+doc NAME::                  Add a new doc file in
+                            <tt>doc</tt> sub-directory.
+                            
+test NAME::                 Add a new test in
+                            <tt>test</tt> sub-directory.
 
 upgrade::                   'Inject' or upgrade some vital files from the
-                            default 'ruby-naive' template into the
-                            project. (<b>Warning:</b> this works only
-                            from version 0.2.2 and (hopefully) above.)
+                            template into the project. Currently only
+                            'ruby-naive' template supports this.
 
 The options are as follows:
 
@@ -71,11 +88,6 @@ The options are as follows:
 -v::                        Be more verbose. You can supply it several
                             times, viz. <tt>-vv</tt> dumps even more
                             debug info.
-
-==Meta
-
-Version & name of your project can be located at generated
-<tt>myproject/lib/myproject/meta.rb</tt> file.
 
 
 ==Examples
@@ -98,13 +110,17 @@ Add another test file:
 
 (It will appear in <tt>test/</tt> sub-directory.)
 
+Create a project from another template:
+
+ % falsework -t c-glib -v new foo-bar
+
 
 ==Bugs
 
 While falsework supports symlinks in templates, rubygems replaces
 symlinks with its corresponding source files. That is why you'll get 2
 <tt>README.rdoc</tt> files in generated project when it was intended to
-have 1 in <tt>doc</tt> subdirectory and the symlink to it in the root
+have 1 in <tt>doc</tt> sub-directory and the symlink to it in the root
 project directory.
 
 If you think that this is pathetic, then just grab the source of
