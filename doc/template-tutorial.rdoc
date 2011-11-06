@@ -1,0 +1,113 @@
+= How To Write a Template
+
+
+== Naming Scheme
+
+A recommended scheme is <tt>language-name</tt>, for example,
+<tt>ruby-naive</tt>, <tt>java-android</tt>, <tt>c-gtk</tt>. Try to use
+the name <= 30 characters in length (this is just a advice, not a
+restriction).
+
+
+== Location
+
+Your personal templates must be in <tt>~/.falsework/templates</tt>
+directory. To view all currently available templates, run <tt>falsework
+list</tt>.
+
+
+== Hierarchy
+
+The file hierarchy in your template directory represents the hierarchy
+of a project generated from it. Any file you place in the directory of a
+particular template goes to the future project. (See an exception
+below.) Typically, the name of the file stays the same too.
+
+If you don't want some file to appear in the resulting project, prefix
+the file wit a '#' character, for example, <tt>#mytest.c</tt>.
+
+There are some files falsework ignores, for example
+<tt>.gitignore</tt>. To include such files, add a <tt>.#erb</tt>
+extension to its name.
+
+There is also a special <tt>#config.yaml</tt> file in the root directory
+of the template. It is an instruction for the template how to behave on
+inject falsework commands.
+
+
+== How Template Files are Processed
+
+Every file (except <tt>#config.yaml</tt>) is considered a Ruby erb
+template. Naturally you want to have some dynamic places in your
+template that are different from project to project, for example, its
+name.
+
+=== The list of useful variables
+
+@classy::           A name of the project including spaces, for example,
+                    'Foo Bar Pro'
+
+@project::          A lowercase derivative from @classy that is suited
+                    for executable name and Github, for example,
+                    'foo_bar_pro'.
+
+@camelcase::        Can be used as a module name, for example,
+                    'FooBarPro'.
+
+uuid::              A string like 'D93E3B05_DAFA_C1F6_8EEA_DBBA1E8DA432'.
+                    It's unique for every file.
+
+
+@user::             Github user name.
+
+@email::            User email.
+
+@gecos::            A full user name.
+
+=== Variables available only for inject falsework commands
+
+target::            Equivalent of @project.
+target_camelcase::  Equivalent of @camelcase.
+target_classy::     Equivalent of @classy.
+
+
+== Inject Configuration
+
+When user types
+
+ % falsework -t c-glib test foobar
+
+falsework looks info <tt>#config.yaml</tt> file in the <tt>c-glib</tt>
+template directory, searches for 'test' key and iterates on its value to
+read some file in the template directory, white that file somewhere and
+set it permission afterwards.
+
+The default configuration is:
+
+ ---
+ :exe:
+ - :src: null
+   :dest: bin/%s'
+   :mode_int: 0744
+
+ :doc:
+ - :src: null
+   :dest: 'doc/%s.rdoc'
+   :mode_int: null
+
+ :test:
+ - :src: null
+   :dest: 'test/test_%s.rb'
+   :mode_int: null
+
+The value of each top level key is an array, so you can inject several
+files at once.
+
+src::       A relative path to a file (that usually prefixed with
+            '#' & hidden from a generator). When +src+ is +null+, the
+            key is ignored and nothing is injected.
+
+dest::      Sub-key can have <tt>%s</tt> in it which will be replaced with
+            target value ('foobar' in the example above).
+
+mode_int::  Permission bits.

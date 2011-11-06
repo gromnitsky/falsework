@@ -67,7 +67,7 @@ task default: [:naive, :repackage]
 RDoc::Task.new('html') do |i|
   i.main = 'doc/README.rdoc'
   i.rdoc_files = FileList['doc/*', 'lib/**/*.rb']
-  i.rdoc_files.exclude("lib/**/templates")
+  i.rdoc_files.exclude("lib/**/templates/**/*")
 end
 
 Rake::TestTask.new do |i|

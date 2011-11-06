@@ -4,44 +4,59 @@ require 'digest/md5'
 
 require_relative 'trestle'
 
-# The directory with template may have files beginning with _#_ char
-# which will be ignored in #project_seed (a method that creates a shiny
-# new project form a template).
-#
-# If you need to run through erb not only the contents of a file in a
-# template but it name itself, then use the following convention:
-#
-# %%VARIABLE%%
-#
-# which is equivalent of erb's: <%= VARIABLE %>. See 'ruby-naive'
-# template directory for examples.
-#
-# In the template files you may use any Mould instance variables. The
-# most usefull are:
-#
-# [@classy]       An original project name, for example, 'Foobar Pro'
-#
-# [@project]      A project name in lowercase, suitable for a name of an
-#                 executable, for example, 'Foobar Pro' would be
-#                 'foobar_pro'.
-#
-# [@camelcase]    A 'normalized' project name, for use in source code,
-#                 for example, 'foobar pro' would be 'FoobarPro'.
-#
-# [@user]         Github user name.
-# [@email]        User email.
-# [@gecos]        A full user name.
 module Falsework
+  # The directory with template may have files beginning with # char
+  # which will be ignored in #project_seed (a method that creates a
+  # shiny new project form a template).
+  #
+  # If you need to run through erb not only the contents of a file in a
+  # template but it name itself, then use the following convention:
+  #
+  # %%VARIABLE%%
+  #
+  # which is equivalent of erb's: <%= VARIABLE %>. See 'ruby-naive'
+  # template directory for examples.
+  #
+  # In the template files you may use any Mould instance variables. The
+  # most usefull are:
+  #
+  # [@classy]       An original project name, for example, 'Foobar Pro'
+  #
+  # [@project]      A project name in lowercase, suitable for a name of an
+  #                 executable, for example, 'Foobar Pro' would be
+  #                 'foobar_pro'.
+  #
+  # [@camelcase]    A 'normalized' project name, for use in source code,
+  #                 for example, 'foobar pro' would be 'FoobarPro'.
+  #
+  # [@user]         Github user name.
+  # [@email]        User email.
+  # [@gecos]        A full user name.
   class Mould
+    # Where @user, @email & @gecos comes from.
     GITCONFIG = '~/.gitconfig'
+    # The possible dirs for templates. The first one is system-wide.
     TEMPLATE_DIRS = [Trestle.gem_libdir + '/templates',
                      File.expand_path('~/.' + Meta::NAME + '/templates')]
+    # The template used if user didn't select one.
     TEMPLATE_DEFAULT = 'ruby-naive'
+    # A file name with configurations for the inject commands.
     TEMPLATE_CONFIG = '#config.yaml'
+    # A list of files to ignore in any template.
     IGNORE_FILES = ['.gitignore']
 
-    attr_accessor :verbose, :batch, :project
-    
+    # A verbose level for -v CLO.
+    attr_accessor :verbose
+    # -b CLO.
+    attr_accessor :batch
+    # A directory of a new generated project.
+    attr_reader :project
+
+    # [project] A name of the future project; may include all crap with spaces.
+    # [template] A name of the template for the project.
+    # [user] Github username; if nil we are extracting it from the ~/.gitconfig.
+    # [email] Github email
+    # [gecos] A full author name from ~/.gitconfig.
     def initialize(project, template, user = nil, email = nil, gecos = nil)
       @project = Mould.name_project project
       raise "invalid project name '#{project}'" if !Mould.name_valid? @project

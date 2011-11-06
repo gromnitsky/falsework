@@ -1,5 +1,6 @@
+# :include: ../../README.rdoc
 module Falsework
-  module Meta
+  module Meta # :nodoc:
     NAME = 'falsework'
     VERSION = '1.3.0'
     AUTHOR = 'Alexander Gromnitsky'

@@ -7,9 +7,8 @@ require 'open4'
 
 require_relative 'meta'
 
-# :include: ../../README.rdoc
 module Falsework
-
+  # A common routines from falsework with love.
   class Trestle
 
     # Execute _cmd_ and return a list [exit_status, stderr,

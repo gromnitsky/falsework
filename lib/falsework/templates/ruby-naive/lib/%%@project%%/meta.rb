@@ -1,5 +1,6 @@
+# :include: ../../README.rdoc
 module <%= @camelcase %>
-  module Meta
+  module Meta # :nodoc:
     NAME = '<%= @project %>'
     VERSION = '0.0.1'
     AUTHOR = '<%= @gecos %>'
