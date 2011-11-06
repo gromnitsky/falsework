@@ -318,8 +318,8 @@ module Falsework
       t || (return '')
       
       re = /%%([^%]+)%%/
-      return ERB.new(t.gsub(re, '<%= \+ %>')).result(binding) if t =~ re
-      return t
+      t = ERB.new(t.gsub(re, '<%= \+ %>')).result(binding) if t =~ re
+      t.sub /\.#erb$/, ''
     end
     
 
