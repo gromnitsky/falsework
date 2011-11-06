@@ -55,4 +55,15 @@ class TestFalsework_3673712978 < MiniTest::Unit::TestCase
     assert_equal 'FooBarPro', Mould.name_camelcase("  FooBar --Pro?\n\n\n")
     assert_equal 'FoobarPro', Mould.name_camelcase('foobar#pro,')
   end
+
+  def test_get_filename
+    f = 'foo'
+    b = 'bar'
+    
+    assert_equal '', Mould.get_filename(nil, binding)
+    assert_equal '', Mould.get_filename('', binding)
+    assert_equal 'f/b', Mould.get_filename('f/b', binding)
+    assert_equal 'f/bar/q.txt', Mould.get_filename('f/%%b%%/q.txt', binding)
+    assert_equal 'foo/bar/q.txt', Mould.get_filename('%%f%%/%%b%%/q.txt', binding)
+  end
 end

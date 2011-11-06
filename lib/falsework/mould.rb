@@ -153,10 +153,6 @@ module Falsework
     def project_seed()
       uuid = Mould.uuidgen_fake # useful variable for the template
       
-      sl = ->(is_dir, *args) {
-        is_dir ? Mould.erb_fname(*args) : Mould.erb_fname(*args).sub(/\.erb$/, '')
-      }
-      
       # check for existing project
       Trestle.errx(1, "directory '#{@project}' is not empty") if Dir.glob(@project + '/*').size > 0
 
@@ -174,14 +170,14 @@ module Falsework
           if File.symlink?(idx)
             # we'll process them later on
             is_dir = File.directory?(@dir_t + '/' + File.readlink(idx))
-            symlinks << [sl.call(is_dir, File.readlink(idx), binding),
-                         sl.call(is_dir, file, binding)]
+            symlinks << [Mould.get_filename(File.readlink(idx), binding),
+                         Mould.get_filename(file, binding)]
           elsif File.directory?(idx)
             puts "D: #{file}"  if @verbose
-            Dir.mkdir Mould.erb_fname(file, binding)
+            Dir.mkdir Mould.get_filename(file, binding)
           else
             puts "N: #{file}" if @verbose
-            to = Mould.erb_fname(file, binding).sub(/\.erb$/, '')
+            to = Mould.get_filename(file, binding)
             Mould.extract(idx, binding, to)
             # make files in bin/ executable
             File.chmod(0744, to) if file =~ /bin\//
@@ -317,10 +313,12 @@ module Falsework
       end
     end
 
-    def self.erb_fname(t, bin)
-      re = /%%([^.]+)?%%/
-      # TODO: fix this crap
-      return ERB.new(t.gsub(re, '<%= \1 %>')).result(bin) if t =~ re
+    # Resolve @t from possible %%VARIABLE%% scheme.
+    def self.get_filename(t, binding)
+      t || (return '')
+      
+      re = /%%([^%]+)%%/
+      return ERB.new(t.gsub(re, '<%= \+ %>')).result(binding) if t =~ re
       return t
     end
     
@@ -343,7 +341,7 @@ module Falsework
           while n < line_max && line = fp.gets
             if line =~ /^..? :erb:/
               t = i.sub(/#{@dir_t}\//, '')
-              r[Mould.erb_fname(t, binding).sub(/\.erb$/, '')] = i
+              r[Mould.get_filename(t, binding)] = i
               break
             end
             n += 1

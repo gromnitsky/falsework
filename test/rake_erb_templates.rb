@@ -31,7 +31,7 @@ def erb_skeletons(local_prj, template)
 #        puts line
         if line =~ /^..? :erb:/
           t = i.sub(/^.+?\//, '')
-          r[target + '/' + t.sub(/#{local_prj}/, '%%@project%%') + '.erb'] = t
+          r[target + '/' + t.sub(/#{local_prj}/, '%%@project%%')] = t
           break
         end
         n += 1
@@ -45,11 +45,11 @@ end
 def erb_make(local_prj, template, target, tmplt)
   raw = File.read(tmplt)
   raw.gsub!(/#{local_prj}/, '<%= @project %>')
-  raw.gsub!(/#{local_prj.capitalize}/, '<%= @project.capitalize %>')
+  raw.gsub!(/#{Mould.name_camelcase(local_prj)}/, '<%= @camelcase %>')
 
   mark = <<-EOF
 
-# Don't remove this: <%= #{local_prj.capitalize}::Meta::NAME %>/<%= #{local_prj.capitalize}::Meta::VERSION %>/#{template}/<%= DateTime.now %>
+# Don't remove this: <%= #{Mould.name_camelcase(local_prj)}::Meta::NAME %>/<%= #{local_prj.capitalize}::Meta::VERSION %>/#{template}/<%= DateTime.now %>
   EOF
   File.open(target, 'w+') {
     |fp| fp.puts raw + ERB.new(mark).result(binding)
