@@ -85,6 +85,23 @@ module Falsework
       }
     end
 
+    # Hyper-fast generator of something like uuid suitable for code
+    # identifiers. Return a string.
+    #
+    # Idea form <http://www.ruby-forum.com/topic/164078#722178>.
+    def self.uuidgen_fake
+      loop {
+        r = ('%08X_%04X_%04X_%04X_%12x' % [
+                                           rand(0x0000100000000),
+                                           rand(0x0000000010000),
+                                           rand(0x0000000010000),
+                                           rand(0x0000000010000),
+                                           rand(0x1000000000000)
+                                          ]).upcase
+        return r if r[0] !~ /\d/
+      }
+    end
+    
     # Return false if @t is invalid.
     def self.name_valid?(t)
       return false if !t || t[0] =~ /\d/
@@ -132,11 +149,10 @@ module Falsework
 
     # Generate a new project in @project directory from @template.
     #
-    # [filter]   A regexp for matching particular files in the
-    #            template directory.
-    #
     # Return false if nothing was extracted.
-    def project_seed(filter)
+    def project_seed()
+      uuid = Mould.uuidgen_fake # useful variable for the template
+      
       sl = ->(is_dir, *args) {
         is_dir ? Mould.erb_fname(*args) : Mould.erb_fname(*args).sub(/\.erb$/, '')
       }
@@ -144,51 +160,44 @@ module Falsework
       # check for existing project
       Trestle.errx(1, "directory '#{@project}' is not empty") if Dir.glob(@project + '/*').size > 0
 
-      Dir.mkdir(@project) unless File.directory?(@project)
-      prjdir = File.expand_path(@project)
-      puts "Project path: #{prjdir}" if @verbose
-
-      origdir = Dir.pwd;
-      Dir.chdir @project
+      Dir.mkdir @project unless File.directory?(@project)
+      puts "Project path: #{File.expand_path(@project)}" if @verbose
 
       r = false
       puts "Template: #{@dir_t}" if @verbose
       symlinks = []
-      Mould.traverse(@dir_t) {|i|
-        file = i.sub(/^#{@dir_t}\//, '')
-        next if filter ? file =~ filter : false
-        next if IGNORE_FILES.index {|ign| file.match(/#{ign}$/) }
+      Dir.chdir(@project) {
+        Mould.traverse(@dir_t) {|idx|
+          file = idx.sub(/^#{@dir_t}\//, '')
+          next if IGNORE_FILES.index {|i| file.match(/#{i}$/) }
 
-        if File.symlink?(i)
-          # we'll process them later on
-          is_dir = File.directory?(@dir_t + '/' + File.readlink(i))
-          symlinks << [sl.call(is_dir, File.readlink(i), binding),
-                       sl.call(is_dir, file, binding)]
-        elsif File.directory?(i)
-          puts("D: #{file}") if @verbose
-          file = Mould.erb_fname(file, binding)
-          Dir.mkdir(prjdir + '/' + file)
-        else
-          puts("N: #{file}") if @verbose
-          to = Mould.erb_fname(file, binding).sub(/\.erb$/, '')
-          Mould.extract(@dir_t + '/' + file, binding, to)
-          # make files in bin/ executable
-          File.chmod(0744, to) if file =~ /bin\//
-        end
-        r = true
-      }
+          if File.symlink?(idx)
+            # we'll process them later on
+            is_dir = File.directory?(@dir_t + '/' + File.readlink(idx))
+            symlinks << [sl.call(is_dir, File.readlink(idx), binding),
+                         sl.call(is_dir, file, binding)]
+          elsif File.directory?(idx)
+            puts "D: #{file}"  if @verbose
+            Dir.mkdir Mould.erb_fname(file, binding)
+          else
+            puts "N: #{file}" if @verbose
+            to = Mould.erb_fname(file, binding).sub(/\.erb$/, '')
+            Mould.extract(idx, binding, to)
+            # make files in bin/ executable
+            File.chmod(0744, to) if file =~ /bin\//
+          end
+          r = true
+        }
 
-      # create saved symlinks
-      Dir.chdir prjdir
-      symlinks.each {|i|
-#        src = i[0].sub(/#{File.extname(i[0])}$/, '')
-#        dest = i[1].sub(/#{File.extname(i[1])}$/, '')
-        src = i[0]
-        dest = i[1]
-        puts "L: #{dest} => #{src}" if @verbose
-        File.symlink(src, dest)
+        # create saved symlinks
+        symlinks.each {|idx|
+          src = idx[0]
+          dest = idx[1]
+          puts "L: #{dest} => #{src}" if @verbose
+          File.symlink(src, dest)
+        }
       }
-      Dir.chdir origdir
+      
       r
     end
 
@@ -232,12 +241,14 @@ module Falsework
     # [target]
     # [target_camelcase]
     # [target_classy]
+    # [uuid]
     def add(mode, target)
       target_orig = target
       target = Mould.name_project target_orig
       raise "invalid target name '#{target_orig}'" if !Mould.name_valid? target
       target_camelcase = Mould.name_camelcase target_orig
       target_classy = Mould.name_classy target_orig
+      uuid = Mould.uuidgen_fake
       
       created = []
 
@@ -278,38 +289,37 @@ module Falsework
       }
     end
     
-    # Extract into the current directory 1 file from _path_.
+    # Extract file @from into @to.
     #
-    # [bin] A binding for eval.
-    # [to]  If != nil write to a particular, not guessed file name.
-    def self.extract(path, bin, to = nil)
-      t = ERB.new(File.read(path))
-      t.filename = path # to report errors relative to this file
+    # [binding] A binding for eval.
+    def self.extract(from, binding, to)
+      t = ERB.new(File.read(from))
+      t.filename = from # to report errors relative to this file
       begin
-#        pp t.result
-        md5_system = Digest::MD5.hexdigest(t.result(bin))
+        output = t.result(binding)
+        md5_system = Digest::MD5.hexdigest(output)
       rescue Exception
-        Trestle.errx(1, "bogus template file '#{path}': #{$!}")
+        Trestle.errx(1, "bogus template file '#{from}': #{$!}")
       end
 
-      skeleton = to || File.basename(path, '.erb')
-      if ! File.exists?(skeleton)
+      if ! File.exists?(to)
         # write a skeleton
         begin
-          File.open(skeleton, 'w+') { |fp| fp.puts t.result(bin) }
+          File.open(to, 'w+') { |fp| fp.puts output }
         rescue
           Trestle.errx(1, "cannot write the skeleton: #{$!}")
         end
       elsif
         # warn a careless user
-        if md5_system != Digest::MD5.file(skeleton).hexdigest
-          Trestle.errx(1, "#{skeleton} already exists")
+        if md5_system != Digest::MD5.file(to).hexdigest
+          Trestle.errx(1, "'#{to}' already exists")
         end
       end
     end
 
     def self.erb_fname(t, bin)
       re = /%%([^.]+)?%%/
+      # TODO: fix this crap
       return ERB.new(t.gsub(re, '<%= \1 %>')).result(bin) if t =~ re
       return t
     end

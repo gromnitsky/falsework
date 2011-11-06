@@ -1,5 +1,5 @@
-#ifndef <%= @project.upcase %>_H
-#define <%= @project.upcase %>_H
+#ifndef <%= uuid + '_' + @project.upcase %>_H
+#define <%= uuid + '_' + @project.upcase %>_H
 
 #define PROG_NAME "<%= @project %>"
 #define PROG_VER "0.0.1"
@@ -23,4 +23,4 @@
 
 #include "utils.h" // some goodies
 
-#endif // <%= @project.upcase %>_H
+#endif // <%= uuid + '_' + @project.upcase %>_H

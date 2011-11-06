@@ -84,7 +84,7 @@ when 'new'
     Trestle.errx 1, $!
   end
   m.verbose = true if $conf[:verbose] > 0
-  m.project_seed(nil)
+  m.project_seed
 
   # create a git repository
   Dir.chdir m.project
