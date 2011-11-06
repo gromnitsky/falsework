@@ -1,15 +1,11 @@
-<%
-def cid(s)
-  s.split(/[^a-zA-Z0-9]/).map(&:capitalize).join
-end
-%>#include "untest.h"
+#include "untest.h"
 
 typedef struct {
 	gchar *s;
-} <%= cid(target) %>Fixture;
+} <%= target_camelcase %>Fixture;
 
 void
-<%= cid(target).downcase %>_fixture_setup(<%= cid(target) %>Fixture *fix, gconstpointer test_file)
+<%= target %>_fixture_setup(<%= target_camelcase %>Fixture *fix, gconstpointer test_file)
 {
 	// don't freak out on g_warning()
 	g_test_log_set_fatal_handler(mylog_fatal_handler, NULL);
@@ -18,7 +14,7 @@ void
 }
 
 void
-<%= cid(target).downcase %>_fixture_teardown(<%= cid(target) %>Fixture *fix, gconstpointer test_file)
+<%= target %>_fixture_teardown(<%= target_camelcase %>Fixture *fix, gconstpointer test_file)
 {
 	g_free(fix->s);
 }
@@ -32,7 +28,7 @@ test_foo()
 }
 
 void
-test_bar(<%= cid(target) %>Fixture *fix,
+test_bar(<%= target_camelcase %>Fixture *fix,
 		 gconstpointer test_file)
 {
 	g_assert_cmpstr("hey", ==, fix->s);
@@ -45,8 +41,8 @@ main (int argc, char **argv)
 
 	g_test_add_func("/<%= target %>/foo", test_foo);
 	
-	g_test_add("/<%= target %>/bar", <%= cid(target) %>Fixture, "some data",
-			   <%= cid(target).downcase %>_fixture_setup, test_bar, <%= cid(target).downcase %>_fixture_teardown);
+	g_test_add("/<%= target %>/bar", <%= target_camelcase %>Fixture, "some data",
+			   <%= target %>_fixture_setup, test_bar, <%= target %>_fixture_teardown);
 	
 	return g_test_run();
 }

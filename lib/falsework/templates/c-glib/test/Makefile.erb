@@ -38,8 +38,10 @@ exe := $(filter-out $(tests),$(basename $(wildcard *.c)) )
 
 # in the source tree
 obj_srcall := $(notdir $(patsubst %.c,%.o,$(wildcard $(proj_src)/*.c)) )
-obj_srcexe := $(notdir $(patsubst %.c,%.o,$(wildcard $(proj_src)/*-*.c)) ) \
-	<%= @project %>.o
+# c files with main function in them
+src_exe = $(shell ruby -e 'ARGV.each {|i| print(File.basename(i)+" ") if File.read(i) =~ /[[:space:];]*(int|void)\s+main\s*\([^)(]*\)\s*{/ }' $(proj_src)/*.c )
+# exclude $src_exe from to be compiled .o files
+obj_srcexe := $(patsubst %.c,%.o,$(src_exe)) <%= @project %>.o
 obj_src := $(filter-out $(obj_srcexe),$(obj_srcall))
 src_h := $(patsubst %.c,%.o,$(wildcard $(proj_src)/*.h))
 

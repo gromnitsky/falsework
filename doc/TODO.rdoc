@@ -10,3 +10,5 @@
 - describe c-glib template
 
 + normalize 'name' of the project before actually making a template
+
+- target_uuid variable for exe/doc/test templates

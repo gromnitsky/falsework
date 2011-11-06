@@ -1,5 +1,5 @@
-#ifndef <%= @project.upcase.gsub(/[^a-zA-Z0-9]/, '_') %>_H
-#define <%= @project.upcase.gsub(/[^a-zA-Z0-9]/, '_') %>_H
+#ifndef <%= @project.upcase %>_H
+#define <%= @project.upcase %>_H
 
 #define PROG_NAME "<%= @project %>"
 #define PROG_VER "0.0.1"
@@ -23,4 +23,4 @@
 
 #include "utils.h" // some goodies
 
-#endif // <%= @project.upcase.gsub(/[^a-zA-Z0-9]/, '_') %>_H
+#endif // <%= @project.upcase %>_H
