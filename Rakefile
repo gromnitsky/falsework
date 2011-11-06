@@ -57,7 +57,7 @@ spec = Gem::Specification.new {|i|
   i.extra_rdoc_files = FileList['doc/*']
 
   i.add_dependency('git', '>=  1.2.5')
-  i.add_dependency('open4', '>= 1.1.0')
+  i.add_dependency('open4', '>= 1.2.0')
 }
 
 Gem::PackageTask.new(spec).define

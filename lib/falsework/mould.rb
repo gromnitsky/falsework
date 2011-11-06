@@ -4,9 +4,6 @@ require 'digest/md5'
 
 require_relative 'trestle'
 
-# Class Mould heavily uses 'ruby-naive' template. Theoretically it can
-# manage any template as long as it has files mentioned in #add.
-#
 # The directory with template may have files beginning with _#_ char
 # which will be ignored in #project_seed (a method that creates a shiny
 # new project form a template).
@@ -22,10 +19,18 @@ require_relative 'trestle'
 # In the template files you may use any Mould instance variables. The
 # most usefull are:
 #
-# [@project]  A project name.
-# [@user]     Github user name.
-# [@email]    User email.
-# [@gecos]    A full user name.
+# [@classy]       An original project name, for example, 'Foobar Pro'
+#
+# [@project]      A project name in lowercase, suitable for a name of an
+#                 executable, for example, 'Foobar Pro' would be
+#                 'foobar_pro'.
+#
+# [@camelcase]    A 'normalized' project name, for use in source code,
+#                 for example, 'foobar pro' would be 'FoobarPro'.
+#
+# [@user]         Github user name.
+# [@email]        User email.
+# [@gecos]        A full user name.
 module Falsework
   class Mould
     GITCONFIG = '~/.gitconfig'
@@ -35,9 +40,14 @@ module Falsework
     TEMPLATE_CONFIG = '#config.yaml'
     IGNORE_FILES = ['.gitignore']
 
-    attr_accessor :verbose, :batch
+    attr_accessor :verbose, :batch, :project
     
     def initialize(project, template, user = nil, email = nil, gecos = nil)
+      @project = Mould.name_project project
+      raise "invalid project name '#{project}'" if !Mould.name_valid? @project
+      @camelcase = Mould.name_camelcase project
+      @classy = Mould.name_classy project
+      
       @verbose = false
       @batch = false
       @template = template
@@ -64,7 +74,6 @@ module Falsework
       Mould.config_parse(@dir_t + '/' + TEMPLATE_CONFIG, [], @conf)
       
       gc = Git.global_config rescue gc = {}
-      @project = project
       @user = user || gc['github.user']
       @email = email || ENV['GIT_AUTHOR_EMAIL'] || ENV['GIT_COMMITTER_EMAIL'] || gc['user.email']
       @gecos = gecos || ENV['GIT_AUTHOR_NAME'] || ENV['GIT_COMMITTER_NAME']  || gc['user.name']
@@ -76,6 +85,39 @@ module Falsework
       }
     end
 
+    # Return false if @t is invalid.
+    def self.name_valid?(t)
+      return false if !t || t[0] =~ /\d/
+      t =~ /^[a-zA-Z0-9_]+$/ ? true : false
+    end
+
+    # Return cleaned version of an original project name, for example,
+    # 'Foobar Pro'
+    def self.name_classy(t)
+      t ? t.gsub(/\s+/, ' ').strip : ''
+    end
+
+    # Return a project name in lowercase, suitable for a name of an
+    # executable; for example, 'Foobar Pro' would be 'foobar_pro'.
+    def self.name_project(raw)
+      raw || (return '')
+
+      r = raw.gsub(/[^a-zA-Z0-9_]+/, '_').downcase
+      r.sub!(/^_/, '');
+      r.sub!(/_$/, '');
+
+      r
+    end
+
+    # Return a 'normalized' project name, for use in source code; for
+    # example, 'foobar pro' would be 'FoobarPro'.
+    def self.name_camelcase(raw)
+      raw || (return '')
+      raw.strip.split(/[^a-zA-Z0-9]+/).map{|idx|
+        idx[0].upcase + idx[1..-1]
+      }.join
+    end
+    
     # Return a hash {name => dir} with current possible template names
     # and corresponding directories.
     def self.templates
@@ -181,10 +223,22 @@ module Falsework
     # Add an executable or a test from the template.
     #
     # [mode] Is either 'exe', 'doc' or 'test'.
-    # [target] A test/exe file to create.
+    # [target] A test/doc/exe file to create.
     #
     # Return a list of a created files.
+    #
+    # Useful variables in the template:
+    #
+    # [target]
+    # [target_camelcase]
+    # [target_classy]
     def add(mode, target)
+      target_orig = target
+      target = Mould.name_project target_orig
+      raise "invalid target name '#{target_orig}'" if !Mould.name_valid? target
+      target_camelcase = Mould.name_camelcase target_orig
+      target_classy = Mould.name_classy target_orig
+      
       created = []
 
       return [] unless @conf[mode.to_sym][0][:src]

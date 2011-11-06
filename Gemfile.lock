@@ -1,0 +1,12 @@
+GEM
+  remote: http://rubygems.org/
+  specs:
+    git (1.2.5)
+    open4 (1.2.0)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  git (~> 1.2.5)
+  open4 (~> 1.2.0)

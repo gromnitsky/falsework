@@ -1,6 +1,6 @@
 require_relative 'helper'
 
-class Test<%= @project.capitalize %>_<%= rand 2**32 %> < MiniTest::Unit::TestCase
+class Test<%= @camelcase %>_<%= rand 2**32 %> < MiniTest::Unit::TestCase
   def setup
     # this runs every time before test_*
     @cmd = cmd('<%= @project %>') # get path to the exe & cd to tests directory

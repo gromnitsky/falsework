@@ -9,7 +9,7 @@ gem 'rdoc'
 require 'rdoc/task'
 
 require_relative 'lib/<%= @project %>/meta'
-include <%= @project.capitalize %>
+include <%= @camelcase %>
 
 require_relative 'test/rake_git'
 

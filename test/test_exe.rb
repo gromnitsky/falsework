@@ -91,6 +91,6 @@ class TestFalsework < MiniTest::Unit::TestCase
   def test_project_invalid_name
     r = Trestle.cmd_run "#{@cmd} new 123"
     assert_equal(1, r[0])
-    assert_match(/project name cannot start with a digit/, r[1])
+    assert_match(/invalid project name/, r[1])
   end
 end

@@ -8,3 +8,5 @@
   gem & upload it)
 
 - describe c-glib template
+
++ normalize 'name' of the project before actually making a template
