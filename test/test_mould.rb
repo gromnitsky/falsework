@@ -15,7 +15,10 @@ class TestFalsework_3673712978 < MiniTest::Unit::TestCase
     assert_equal true, r
 
     o = { foo: 1 }
-    r = Mould.config_parse File.dirname(@cmd) + '/../etc/falsework.yaml', ['bar'], o
+    out, err = capture_io do
+      r = Mould.config_parse File.dirname(@cmd) + '/../etc/falsework.yaml', ['bar'], o
+    end
+    assert_match "missing or nil 'bar' in", err
     refute r
   end
 
@@ -65,5 +68,13 @@ class TestFalsework_3673712978 < MiniTest::Unit::TestCase
     assert_equal 'f/b', Mould.get_filename('f/b', binding)
     assert_equal 'f/bar/q.txt', Mould.get_filename('f/%%b%%/q.txt', binding)
     assert_equal 'foo/bar/q.txt', Mould.get_filename('%%f%%/%%b%%/q.txt', binding)
+  end
+
+  def test_uuid
+    512.times {|i|
+      t = Mould.uuidgen_fake
+      assert_match(/^[A-Z0-9]{8}_[A-Z0-9]{4}_[A-Z0-9]{4}_[A-Z0-9]{4}_[A-Z0-9]{12}$/, t)
+      refute_match /\d/, t[0]
+    }
   end
 end

@@ -1,6 +1,6 @@
 === 1.3.0
 
-Wed Nov  2 21:20:23 EET 2011
+Mon Nov  7 07:15:00 EET 2011
 
 * <b>WARNING:</b> 'naive' template is now called 'ruby-naive'. To upgrade
   to a new template you must manually find all files in your project

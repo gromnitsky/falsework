@@ -1,6 +1,7 @@
 require 'git'
 require 'erb'
 require 'digest/md5'
+require 'securerandom'
 
 require_relative 'trestle'
 
@@ -102,17 +103,15 @@ module Falsework
 
     # Hyper-fast generator of something like uuid suitable for code
     # identifiers. Return a string.
-    #
-    # Idea form <http://www.ruby-forum.com/topic/164078#722178>.
     def self.uuidgen_fake
       loop {
-        r = ('%08X_%04X_%04X_%04X_%12x' % [
-                                           rand(0x0000100000000),
-                                           rand(0x0000000010000),
-                                           rand(0x0000000010000),
-                                           rand(0x0000000010000),
-                                           rand(0x1000000000000)
-                                          ]).upcase
+        r = ('%s_%s_%s_%s_%s' % [
+                                 SecureRandom.hex(4),
+                                 SecureRandom.hex(2),
+                                 SecureRandom.hex(2),
+                                 SecureRandom.hex(2),
+                                 SecureRandom.hex(6),
+                                ]).upcase
         return r if r[0] !~ /\d/
       }
     end

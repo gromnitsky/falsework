@@ -1,0 +1,13 @@
+* TODO In the distant future [3/6]
+
+- [-] more templates [1/4]
+  - [X] c glib
+  - [ ] java android
+  - [ ] ruby sinatra
+  - [ ] ruby cli but a lighter one
+- [X] write a small tutorial 'how to write a template'
+- [ ] release to rubygems.org (it must run test, pull to github, tag,
+  create gem & upload it)
+- [ ] describe c-glib template
+- [X] normalize 'name' of the project before actually making a template
+- [X] target_uuid variable for exe/doc/test templates
