@@ -76,6 +76,9 @@ The options are as follows:
 
 -b::                        A batch mode. (No questions asked.)
 
+--no-git::                  Don't create a Git repository. Don't use
+                            this for 'ruby-naive' template.
+
 --config-dirs::             List all possible locations for the
                             configuration file. The first found wins.
 

@@ -10,13 +10,14 @@ $t = Trestle.new($conf)
 
 $conf[:banner] = <<EOF
 Usage: #{File.basename($0)} [options] command ...
-Available commands: list, new NAME, exe NAME, doc NAME, test NAME or upgrade.
+Available commands: list, (new|exe|doc|test) NAME, upgrade.
 EOF
 $conf[:user] = nil
 $conf[:gecos] = nil
 $conf[:email] = nil
 $conf[:template] = nil
 $conf[:batch] = false
+$conf[:git] = true
 
 def add_files(mode, files)
   r = true
@@ -38,11 +39,12 @@ end
 
 $t.config_parse(['foobar']) {|src|
   o = $t.cl_parse(src) # create an OptionParser object
-  o.on('--user STR', 'Github user') {|i| $conf[:user] = i}
-  o.on('--gecos STR', 'A gecos-like string') {|i| $conf[:gecos] = i}
+  o.on('--user STR', 'Github user.') {|i| $conf[:user] = i}
+  o.on('--gecos STR', 'A gecos-like string.') {|i| $conf[:gecos] = i}
   o.on('--email STR') {|i| $conf[:email] = i}
-  o.on('-t NAME', 'A template name') {|i| $conf[:template] = i}
-  o.on('-b', 'Run in a batch mode, don\'t ask any questions') { $conf[:batch] = true}
+  o.on('--no-git', "Don't create a git repo. (Will break 'ruby-naive'.)") {|i| $conf[:git] = false }
+  o.on('-t NAME', 'A template name.') {|i| $conf[:template] = i}
+  o.on('-b', 'Run in a batch mode, don\'t ask any questions.') { $conf[:batch] = true}
   $t.cl_parse(src, o) # run cl parser
 }
 
@@ -90,13 +92,14 @@ when 'new'
   m.project_seed
 
   # create a git repository
-  Dir.chdir m.project
-  $t.veputs(1, "Creating a git repository in #{Dir.pwd}... __NNL__")
-  g = Git.init
-  g.add('.')
-  g.commit("Initial import from #{Falsework::Meta::NAME} #{Falsework::Meta::VERSION}.")
-  $t.veputs(1, 'OK')
-  
+  if $conf[:git]
+    Dir.chdir m.project
+    $t.veputs(1, "Creating a git repository in #{Dir.pwd}... __NNL__")
+    g = Git.init
+    g.add '.'
+    g.commit "Initial import from #{Falsework::Meta::NAME} #{Falsework::Meta::VERSION}."
+    $t.veputs(1, 'OK')
+  end
 else
   Trestle.errx(1, "unknown command: " + ARGV[0])
 end

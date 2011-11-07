@@ -16,6 +16,8 @@ Wed Nov  2 21:20:23 EET 2011
 	
 * Added 'c-glib' template.
 
+* '--no-git' CLO.
+
 * Generalized template spec: it's possible to have templates for
   non-Ruby programs.
 

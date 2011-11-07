@@ -194,8 +194,6 @@ module Falsework
             puts "N: #{file}" if @verbose
             to = Mould.get_filename(file, binding)
             Mould.extract(idx, binding, to)
-            # make files in bin/ executable
-            File.chmod(0744, to) if file =~ /bin\//
           end
           r = true
         }
@@ -317,8 +315,10 @@ module Falsework
         # write a skeleton
         begin
           File.open(to, 'w+') { |fp| fp.puts output }
+          # transfer the exec bit to the generated result
+          File.chmod(0744, to) if File.stat(from).executable?
         rescue
-          Trestle.errx(1, "cannot write the skeleton: #{$!}")
+          Trestle.errx(1, "cannot generate: #{$!}")
         end
       elsif
         # warn a careless user

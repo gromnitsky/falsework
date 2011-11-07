@@ -18,7 +18,7 @@ class TestFalsework < MiniTest::Unit::TestCase
     File.open(file, 'w+') {|fp| fp.printf(o) }
   end
   
-  def test_project_new
+  def test_project_ruby_naive
     rm_rf 'templates/foo'
     r = Trestle.cmd_run "#{@cmd} new templates/foo -v"
 #    pp r
@@ -57,40 +57,71 @@ class TestFalsework < MiniTest::Unit::TestCase
                    i.match(/\.\.?$/) || i.match(/\.git[^i]/)
                  })
 
-    # add files
-    origdir = pwd
-    cd 'templates/foo'
+    Dir.chdir('templates/foo') {
+      # add files
+      r = Trestle.cmd_run "#{@cmd} exe qqq"
+      assert_equal(0, r[0])
+      assert_equal(true, File.executable?('bin/qqq'))
+      assert_equal(true, File.exist?('doc/qqq.rdoc'))
 
-    r = Trestle.cmd_run "#{@cmd} exe qqq"
-    assert_equal(0, r[0])
-    assert_equal(true, File.executable?('bin/qqq'))
-    assert_equal(true, File.exist?('doc/qqq.rdoc'))
+      r = Trestle.cmd_run "#{@cmd} test qqq"
+      assert_equal(0, r[0])
+      assert_equal(true, File.exist?('test/test_qqq.rb'))
 
-    r = Trestle.cmd_run "#{@cmd} test qqq"
-    assert_equal(0, r[0])
-    assert_equal(true, File.exist?('test/test_qqq.rb'))
-
-    # upgrade
-    r = Trestle.cmd_run "#{@cmd} upgrade -b"
-    assert_equal(0, r[0])
-    rm ['test/helper_trestle.rb', 'test/rake_git.rb']
-    r = Trestle.cmd_run "#{@cmd} upgrade -b"
-    assert_equal(0, r[0])
-    sed 'test/helper_trestle.rb',
-    /^(# Don't.+falsework\/)\d+\.\d+\.\d+(\/.+)$/, '\1999.999.999\2'
-    r = Trestle.cmd_run "#{@cmd} upgrade -b"
-    assert_equal(1, r[0])
-    assert_match(/file .+ is from .+ falsework: 999.999.999/, r[1])
-    mv('test', 'ttt')
-    r = Trestle.cmd_run "#{@cmd} upgrade -b"
-    assert_equal(0, r[0])
-    
-    cd origdir
+      # upgrade
+      r = Trestle.cmd_run "#{@cmd} upgrade -b"
+      assert_equal(0, r[0])
+      rm ['test/helper_trestle.rb', 'test/rake_git.rb']
+      r = Trestle.cmd_run "#{@cmd} upgrade -b"
+      assert_equal(0, r[0])
+      sed 'test/helper_trestle.rb',
+      /^(# Don't.+falsework\/)\d+\.\d+\.\d+(\/.+)$/, '\1999.999.999\2'
+      r = Trestle.cmd_run "#{@cmd} upgrade -b"
+      assert_equal(1, r[0])
+      assert_match(/file .+ is from .+ falsework: 999.999.999/, r[1])
+      mv('test', 'ttt')
+      r = Trestle.cmd_run "#{@cmd} upgrade -b"
+      assert_equal(0, r[0])
+    }
   end
 
   def test_project_invalid_name
     r = Trestle.cmd_run "#{@cmd} new 123"
     assert_equal(1, r[0])
     assert_match(/invalid project name/, r[1])
+  end
+
+  def test_project_c_glib
+    rm_rf 'templates/c_glib'
+    r = Trestle.cmd_run "#{@cmd} new templates/c-glib -t c-glib --no-git"
+    assert_equal(0, r[0])
+
+    Dir.chdir('templates/c_glib') {
+      r = Trestle.cmd_run "#{@cmd} -t c-glib exe q-q-q"
+      assert_equal(0, r[0])
+      assert_equal(true, File.exist?('src/q_q_q.h'))
+      assert_equal(true, File.exist?('src/q_q_q.c'))
+      assert_equal(true, File.exist?('doc/q_q_q.1.asciidoc'))
+
+      r = Trestle.cmd_run "#{@cmd} -t c-glib test q-q-q"
+      assert_equal(0, r[0])
+      assert_equal(true, File.exist?('test/test_q_q_q.c'))
+      
+      Dir.chdir('src') {
+        r = Trestle.cmd_run "gmake"
+        assert_equal 0, r[0]
+        assert_equal true, File.executable?('c_glib')
+        assert_equal(true, File.exist?('q_q_q.o'))
+      }
+      Dir.chdir('test') {
+        r = Trestle.cmd_run "gmake"
+        assert_equal 0, r[0]
+        assert_equal true, File.executable?('test_utils')
+        assert_equal true, File.executable?('test_q_q_q')
+
+        r = Trestle.cmd_run "gmake test"
+        assert_equal 0, r[0]
+      }
+    }
   end
 end
