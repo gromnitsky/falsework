@@ -37,8 +37,8 @@ module Falsework
     # Where @user, @email & @gecos comes from.
     GITCONFIG = '~/.gitconfig'
     # The possible dirs for templates. The first one is system-wide.
-    TEMPLATE_DIRS = [Trestle.gem_libdir + '/templates',
-                     File.expand_path('~/.' + Meta::NAME + '/templates')]
+    @@template_dirs = [Trestle.gem_libdir + '/templates',
+                       File.expand_path('~/.' + Meta::NAME + '/templates')]
     # The template used if user didn't select one.
     TEMPLATE_DEFAULT = 'ruby-naive'
     # A file name with configurations for the inject commands.
@@ -101,6 +101,19 @@ module Falsework
       }
     end
 
+    # Modifies an internal list of available template directories
+    def self.template_dirs_add(dirs)
+      return unless dirs
+
+      dirs.each {|idx|
+        if ! File.directory?(idx)
+          Trestle.warnx "invalid additional template directory: #{idx}"
+        else
+          @@template_dirs << idx
+        end
+      }
+    end
+    
     # Hyper-fast generator of something like uuid suitable for code
     # identifiers. Return a string.
     def self.uuidgen_fake
@@ -153,7 +166,7 @@ module Falsework
     # and corresponding directories.
     def self.templates
       r = {}
-      TEMPLATE_DIRS.each {|i|
+      @@template_dirs.each {|i|
         Dir.glob(i + '/*').each {|j|
           r[File.basename(j)] = j if File.directory?(j)
         }

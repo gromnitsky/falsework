@@ -126,9 +126,9 @@ module Falsework
 #        puts "\n2 run"
         r = config_flat_load(rvars)
       rescue
-        Trestle.errx(1, "cannot load config: #{$!}")
+        Trestle.errx(1, "cannot load config: #{Trestle.get_backtrace}")
       end
-      veputs(1, "Loaded config: #{r}")
+      veputs(1, "OK") if r
       cb.call(block_given?, ARGV)
     end
 
@@ -140,7 +140,8 @@ module Falsework
     # Return a loaded filename or nil on error.
     def config_flat_load(rvars)
       p = ->(f) {
-        if File.readable?(f)
+        veputs(1, "Loading #{f}... " + NNL_MARK)
+        if File.file?(f)
           begin
             myconf = YAML.load_file(f)
           rescue
@@ -152,11 +153,13 @@ module Falsework
           @conf.merge!(myconf)
           return @conf[:config]
         end
+        
+        veputs(1, "FAILED")
         return nil
       }
 
       if @conf[:config].index('/')
-        return p.call(@config[:config])
+        return p.call(@conf[:config])
       else
         @conf[:config_dirs].each {|dir|
           return dir+'/'+@conf[:config] if p.call(dir + '/' + @conf[:config])
@@ -191,9 +194,15 @@ module Falsework
           @conf[:config] = i
         }
         o.on('--config-dirs', 'Show possible config locations.') {
-          @conf[:config_dirs].each { |j|
-            f = j + '/' + @conf[:config]
-            puts((File.readable?(f) ? '* ' : '  ') + f)
+          mark = false
+          @conf[:config_dirs].each { |idx|
+            f = idx + '/' + @conf[:config]
+            if File.readable?(f) && !mark
+              puts "* " + f
+              mark = true
+            else
+              puts "  " + f
+            end
           }
           exit 0
         }

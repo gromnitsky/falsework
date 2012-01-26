@@ -37,7 +37,7 @@ end
 
 # --[ main ]------------------------------------------------------------
 
-$t.config_parse(['foobar']) {|src|
+$t.config_parse([]) {|src|
   o = $t.cl_parse(src) # create an OptionParser object
   o.on('--user STR', 'Github user.') {|i| $conf[:user] = i}
   o.on('--gecos STR', 'A gecos-like string.') {|i| $conf[:gecos] = i}
@@ -56,10 +56,13 @@ if $conf[:verbose] >= 2
   pp $conf
 end
 
+# modify a list of available template directories
+Mould.template_dirs_add $conf[:tdir]
+
 case ARGV[0]
 when 'list'
   Mould.templates.each {|name, loc|
-    loc = '(system)' if loc == Mould::TEMPLATE_DIRS[0] +'/'+ name
+    loc = '(system)' if loc == Mould.class_variable_get(:@@template_dirs)[0] +'/'+ name
     puts "%-30s %s" % [name, loc]
   }
   
