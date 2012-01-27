@@ -1,4 +1,4 @@
-* TODO In the distant future [3/6]
+* TODO In the distant future [3/7] [42%]
 
 - [-] more templates [1/4]
   - [X] c glib
@@ -11,3 +11,4 @@
 - [ ] describe c-glib template
 - [X] normalize 'name' of the project before actually making a template
 - [X] target_uuid variable for exe/doc/test templates
+- [ ] relocate templates from lib/falsework directory to project root

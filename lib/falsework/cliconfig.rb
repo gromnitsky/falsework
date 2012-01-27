@@ -18,7 +18,12 @@ module Falsework
                   Pathname.new('/usr/etc'),
                   Pathname.new('/usr/local/etc'),
                   CliUtils.gem_dir_lib.parent.parent + 'etc']
-    
+
+    # Example:
+    #
+    # conf = CliConfig.new
+    # conf[:my_option] = 123
+    # conf.load
     def initialize
       @conf = Hash.new
       @conf[:verbose] = 0

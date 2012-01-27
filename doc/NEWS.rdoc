@@ -1,3 +1,21 @@
+=== 2.0.0
+
+Fri Jan 27 22:11:06 EET 2012
+
+* <b>WARNING:</b> 'ruby-naive' template is now called 'ruby-cli'. <b>You
+  cannot upgrade to it</b> because everything changed in it to be more
+  pretty.
+
+* New command: listdirs.
+
+* User can specify additional directories for templates.
+
+=== 1.3.1
+
+Fri Jan 27 12:07:55 EET 2012
+
+* Fixed exclude pattern in gemspec for rdoc.
+
 === 1.3.0
 
 Mon Nov  7 07:15:00 EET 2011

@@ -43,7 +43,7 @@ $conf.load {|o|
   o.on('--no-git', "Don't create a git repo.",
        "(Will break 'ruby-cli'.)") { $conf[:git] = false }
   o.on('-t NAME', 'A template name.') {|i| $conf[:template] = i }
-  o.on('-b', 'Run in a batch mode',
+  o.on('-b', 'Run in a batch mode and',
        'don\'t ask any questions.') { $conf[:batch] = true }
 }
 

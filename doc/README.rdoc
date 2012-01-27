@@ -10,7 +10,7 @@ falsework--A primitive scaffold generator for writing CLI programs.
 
 ==Description
 
-The falsework utility ships with 2 templates: <tt>ruby-naive</tt> and
+The falsework utility ships with 2 templates: <tt>ruby-cli</tt> and
 <tt>c-glib</tt>.
 
 Initially the template spec was designed only for Ruby projects but
@@ -74,7 +74,7 @@ test NAME::                 Add a new test in
 
 upgrade::                   'Inject' or upgrade some vital files from the
                             template into the project. Currently only
-                            'ruby-naive' template supports this.
+                            'ruby-cli' template supports this.
 
 The options are as follows:
 
@@ -83,7 +83,7 @@ The options are as follows:
 -b::                        A batch mode. (No questions asked.)
 
 --no-git::                  Don't create a Git repository. Don't use
-                            this for 'ruby-naive' template.
+                            this for 'ruby-cli' template.
 
 --config-dirs::             List all possible locations for the
                             configuration file. The first found wins.
