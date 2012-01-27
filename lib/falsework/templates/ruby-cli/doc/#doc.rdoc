@@ -21,7 +21,7 @@ The options are as follows:
                             it contains <tt>/</tt> in it, the list from
                             <tt>--config-dirs</tt> is ignored.
 
--V::                        Show version and exit.
+-V, --version::             Show version and exit.
 
 -v::                        Be more verbose. You can supply it several
                             times, viz. <tt>-vv</tt> dumps even more

@@ -5,15 +5,13 @@ require_relative '../lib/<%= @project %>/cliconfig'
 
 include <%= @camelcase %>
 
-$conf = Hash.new
-
+$conf = CliConfig.new
 $conf[:banner] = "Usage: #{File.basename($0)} [options] hren'"
 $conf[:foobar] = ''
 
+### main
 
-# --[ main ]------------------------------------------------------------
-
-conf.load(['foobar']) {|o|
+$conf.load(['foobar']) {|o|
   o.on('--foobar STR', 'An example of the option --foobar') {|i|
     $conf[:foobar] = i
   }
