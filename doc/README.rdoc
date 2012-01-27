@@ -53,8 +53,9 @@ list::                      Do nothing except listing all available
 
 listdirs::                  Do nothing except listing all available
                             templates directories. You can add another
-                            directory, modifying <tt>tdir</tt> option in
-                            the config file. (<tt>tdir</tt> is an array).
+                            directory by modifying <tt>tdir</tt> option
+                            in the config file. (<tt>tdir</tt> is an
+                            array).
                             
 new NAME::                  Create a new project. It creates a directory
                             <i>NAME</i> and populates it with files.

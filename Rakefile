@@ -35,6 +35,10 @@ CLOBBER.concat ERB_DYN_SKELETON.keys
 # Gem staff
 #
 
+rdoc_task_excl = 'lib/**/templates/**/*'
+rdoc_spec_excl = 'lib/.+/templates/'
+rdoc_main = 'doc/README.rdoc'
+
 spec = Gem::Specification.new {|i|
   i.name = Meta::NAME
   i.version = `bin/#{i.name} -V`
@@ -53,11 +57,11 @@ spec = Gem::Specification.new {|i|
   
   i.test_files = FileList['test/test_*.rb']
   
-  i.rdoc_options << '-m' << 'doc/README.rdoc'
+  i.rdoc_options << '-m' << rdoc_main << '-x' << rdoc_spec_excl
   i.extra_rdoc_files = FileList['doc/*']
 
   i.add_dependency('git', '>=  1.2.5')
-  i.add_dependency('open4', '>= 1.2.0')
+  i.add_dependency('open4', '>= 1.3.0')
 }
 
 Gem::PackageTask.new(spec).define
@@ -65,9 +69,9 @@ Gem::PackageTask.new(spec).define
 task default: [:naive, :repackage]
 
 RDoc::Task.new('html') do |i|
-  i.main = 'doc/README.rdoc'
+  i.main = rdoc_main
   i.rdoc_files = FileList['doc/*', 'lib/**/*.rb']
-  i.rdoc_files.exclude("lib/**/templates/**/*")
+  i.rdoc_files.exclude rdoc_task_excl
 end
 
 Rake::TestTask.new do |i|
