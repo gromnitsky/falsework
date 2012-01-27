@@ -10,7 +10,7 @@ $t = Trestle.new($conf)
 
 $conf[:banner] = <<EOF
 Usage: #{File.basename($0)} [options] command ...
-Available commands: list, (new|exe|doc|test) NAME, upgrade.
+Available commands: list, listdirs, (new|exe|doc|test) NAME, upgrade.
 EOF
 $conf[:user] = nil
 $conf[:gecos] = nil
@@ -64,6 +64,11 @@ when 'list'
   Mould.templates.each {|name, loc|
     loc = '(system)' if loc == Mould.class_variable_get(:@@template_dirs)[0] +'/'+ name
     puts "%-30s %s" % [name, loc]
+  }
+  
+when 'listdirs'
+  Mould.class_variable_get(:@@template_dirs).each {|idx|
+    puts idx
   }
   
 when /exe|doc|test/

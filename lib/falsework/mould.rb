@@ -103,7 +103,7 @@ module Falsework
 
     # Modifies an internal list of available template directories
     def self.template_dirs_add(dirs)
-      return unless dirs
+      return unless defined? dirs.each
 
       dirs.each {|idx|
         if ! File.directory?(idx)
