@@ -18,15 +18,15 @@ require_relative 'test/rake_git'
 #
 require_relative 'test/rake_erb_templates'
 
-ERB_DYN_SKELETON = erb_skeletons(Meta::NAME, 'ruby-naive')
+ERB_DYN_SKELETON = erb_skeletons(Meta::NAME, 'ruby-cli')
 ERB_DYN_SKELETON.each {|k, v|
   file k => [v] do |t|
-    erb_make(Meta::NAME, 'ruby-naive', t.name, t.prerequisites[0])
+    erb_make(Meta::NAME, 'ruby-cli', t.name, t.prerequisites[0])
   end
 }
 
-desc "Generate some erb templates for ruby-naive template"
-task naive: ERB_DYN_SKELETON.keys
+desc "Generate some erb templates for ruby-cli template"
+task cli: ERB_DYN_SKELETON.keys
 
 CLOBBER.concat ERB_DYN_SKELETON.keys
 #pp CLOBBER
@@ -66,7 +66,7 @@ spec = Gem::Specification.new {|i|
 
 Gem::PackageTask.new(spec).define
 
-task default: [:naive, :repackage]
+task default: [:cli, :repackage]
 
 RDoc::Task.new('html') do |i|
   i.main = rdoc_main
@@ -78,4 +78,4 @@ Rake::TestTask.new do |i|
   i.test_files = FileList['test/test_*.rb']
 end
 
-task test: [:naive]
+task test: [:cli]

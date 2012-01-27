@@ -1,12 +1,11 @@
 #!/usr/bin/env ruby
 # -*-ruby-*-
 
-require_relative '../lib/<%= @project %>/trestle.rb'
+require_relative '../lib/<%= @project %>/cliconfig'
 
 include <%= @camelcase %>
 
 $conf = Hash.new
-$t = Trestle.new($conf)
 
 $conf[:banner] = "Usage: #{File.basename($0)} [options] hren'"
 $conf[:foobar] = ''
@@ -14,17 +13,15 @@ $conf[:foobar] = ''
 
 # --[ main ]------------------------------------------------------------
 
-$t.config_parse(['foobar']) {|src|
-  o = $t.cl_parse(src) # create an OptionParser object
+conf.load(['foobar']) {|o|
   o.on('--foobar STR', 'An example of the option --foobar') {|i|
     $conf[:foobar] = i
   }
-  $t.cl_parse(src, o) # run cl parser
 }
 
 # print our env
 if $conf[:verbose] >= 2
-  puts 'Libs dir: ' + Trestle.gem_libdir
+  puts 'Libs dir: ' + CliUtils.gem_dir_lib
   pp $conf
 end
 

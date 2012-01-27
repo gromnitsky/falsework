@@ -5,7 +5,7 @@ require_relative '../lib/falsework/mould'
 
 # Search for all files in the project (except .git directory) for the line
 #
-# /^..? :erb:/
+# /^..? :erb: [^ ]+/
 #
 # in first 4 lines. If the line is found, the file is considered a
 # skeleton for a template. Return a hash {target:template}
@@ -29,7 +29,7 @@ def erb_skeletons(local_prj, template)
       n = 0
       while n < line_max && line = fp.gets
 #        puts line
-        if line =~ /^..? :erb:/
+        if line =~ /^..? :erb: [^\s]+/
           t = i.sub(/^.+?\//, '')
           r[target + '/' + t.sub(/#{local_prj}/, '%%@project%%')] = t
           break
@@ -57,4 +57,4 @@ def erb_make(local_prj, template, target, tmplt)
 end
 
 
-pp erb_skeletons(Falsework::Meta::NAME, 'ruby-naive') if __FILE__ == $0
+pp erb_skeletons(Falsework::Meta::NAME, 'ruby-cli') if __FILE__ == $0

@@ -2,8 +2,9 @@ require 'git'
 require 'erb'
 require 'digest/md5'
 require 'securerandom'
+require 'yaml'
 
-require_relative 'trestle'
+require_relative 'cliutils'
 
 module Falsework
   # The directory with template may have files beginning with # char
@@ -15,7 +16,7 @@ module Falsework
   #
   # %%VARIABLE%%
   #
-  # which is equivalent of erb's: <%= VARIABLE %>. See 'ruby-naive'
+  # which is equivalent of erb's: <%= VARIABLE %>. See 'ruby-cli'
   # template directory for examples.
   #
   # In the template files you may use any Mould instance variables. The
@@ -37,10 +38,10 @@ module Falsework
     # Where @user, @email & @gecos comes from.
     GITCONFIG = '~/.gitconfig'
     # The possible dirs for templates. The first one is system-wide.
-    @@template_dirs = [Trestle.gem_libdir + '/templates',
-                       File.expand_path('~/.' + Meta::NAME + '/templates')]
+    @@template_dirs = [CliUtils.gem_dir_lib + 'templates',
+                       Pathname.new(Dir.home) + ".#{Meta::NAME}" + 'templates']
     # The template used if user didn't select one.
-    TEMPLATE_DEFAULT = 'ruby-naive'
+    TEMPLATE_DEFAULT = 'ruby-cli'
     # A file name with configurations for the inject commands.
     TEMPLATE_CONFIG = '#config.yaml'
     # A list of files to ignore in any template.
@@ -67,7 +68,7 @@ module Falsework
       @verbose = false
       @batch = false
       @template = template
-      @dir_t = Mould.templates[@template || TEMPLATE_DEFAULT] || Trestle.errx(1, "no such template: #{template}")
+      @dir_t = Mould.templates[@template || TEMPLATE_DEFAULT] || CliUtils.errx(1, "no such template: #{template}")
 
       # default config
       @conf = {
@@ -97,7 +98,7 @@ module Falsework
       [['github.user', @user],
        ['user.email', @email],
        ['user.name', @gecos]].each {|i|
-        Trestle.errx(1, "missing #{i.first} in #{GITCONFIG}") if i.last.to_s == ''
+        CliUtils.errx(1, "missing #{i.first} in #{GITCONFIG}") if i.last.to_s == ''
       }
     end
 
@@ -106,8 +107,10 @@ module Falsework
       return unless defined? dirs.each
 
       dirs.each {|idx|
+        fail "#{idx} is not a Pathname" unless idx.instance_of?(Pathname)
+        
         if ! File.directory?(idx)
-          Trestle.warnx "invalid additional template directory: #{idx}"
+          CliUtils.warnx "invalid additional template directory: #{idx}"
         else
           @@template_dirs << idx
         end
@@ -167,7 +170,7 @@ module Falsework
     def self.templates
       r = {}
       @@template_dirs.each {|i|
-        Dir.glob(i + '/*').each {|j|
+        Dir.glob(i + '*').each {|j|
           r[File.basename(j)] = j if File.directory?(j)
         }
       }
@@ -181,7 +184,7 @@ module Falsework
       uuid = Mould.uuidgen_fake # useful variable for the template
       
       # check for existing project
-      Trestle.errx(1, "directory '#{@project}' is not empty") if Dir.glob(@project + '/*').size > 0
+      CliUtils.errx(1, "directory '#{@project}' is not empty") if Dir.glob(@project + '/*').size > 0
 
       Dir.mkdir @project unless File.directory?(@project)
       puts "Project path: #{File.expand_path(@project)}" if @verbose
@@ -234,11 +237,11 @@ module Falsework
         begin
           myconf = YAML.load_file(file)
         rescue
-          Trestle.warnx "cannot parse #{file}: #{$!}"
+          CliUtils.warnx "cannot parse #{file}: #{$!}"
           return false
         end
         rvars.each { |i|
-          Trestle.warnx "missing or nil '#{i}' in #{file}" if ! myconf.key?(i.to_sym) || ! myconf[i.to_sym]
+          CliUtils.warnx "missing or nil '#{i}' in #{file}" if ! myconf.key?(i.to_sym) || ! myconf[i.to_sym]
           r = false
         }
         
@@ -282,7 +285,7 @@ module Falsework
           Mould.extract(@dir_t + '/' + idx[:src], binding, to)
           File.chmod(idx[:mode_int], to) if idx[:mode_int]
         rescue
-          Trestle.warnx "failed to create '#{to}' (check your #config.yaml): #{$!}"
+          CliUtils.warnx "failed to create '#{to}' (check your #config.yaml): #{$!}"
         else
           created << to
         end
@@ -320,7 +323,7 @@ module Falsework
         output = t.result(binding)
         md5_system = Digest::MD5.hexdigest(output)
       rescue Exception
-        Trestle.errx(1, "bogus template file '#{from}': #{$!}")
+        CliUtils.errx(1, "bogus template file '#{from}': #{$!}")
       end
 
       if ! File.exists?(to)
@@ -330,12 +333,12 @@ module Falsework
           # transfer the exec bit to the generated result
           File.chmod(0744, to) if File.stat(from).executable?
         rescue
-          Trestle.errx(1, "cannot generate: #{$!}")
+          CliUtils.errx(1, "cannot generate: #{$!}")
         end
       elsif
         # warn a careless user
         if md5_system != Digest::MD5.file(to).hexdigest
-          Trestle.errx(1, "'#{to}' already exists")
+          CliUtils.errx(1, "'#{to}' already exists")
         end
       end
     end
@@ -359,7 +362,7 @@ module Falsework
     def upgradable_files()
       line_max = 4
       r = {}
-      Falsework::Mould.traverse(@dir_t) {|i|
+      Mould.traverse(@dir_t) {|i|
         next if File.directory?(i)
         next if File.symlink?(i) # hm...
 
@@ -429,7 +432,7 @@ module Falsework
               end
             end
 
-            Trestle.warnx("#{k}: unversioned") if ! is_versioned
+            CliUtils.warnx("#{k}: unversioned") if ! is_versioned
           }
         end
       }
@@ -458,7 +461,7 @@ an '.old' extension. So? }
       u.each {|k, v|
         printf("%#{tsl}s) mv %s %s\n",
                "#{count}/#{total}", k, "#{k}.old") if @verbose
-        File.rename(k, "#{k}.old") rescue Trestle.warnx('renaming failed')
+        File.rename(k, "#{k}.old") rescue CliUtils.warnx('renaming failed')
         printf("%#{tsl}s  Extracting %s ...\n", "", File.basename(v)) if @verbose
         FileUtils.mkdir_p(File.dirname(k))
         Mould.extract(v, binding, k)

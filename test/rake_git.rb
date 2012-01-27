@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 # -*-ruby-*-
-# :erb:
+# :erb: ruby-cli
 
 # This is a helper for your Rakefile. Read the comments for each
 # function.

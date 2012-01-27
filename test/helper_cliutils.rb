@@ -1,10 +1,10 @@
-# :erb:
+# :erb: ruby-cli
 # Various staff for minitest. Include this file into your 'helper.rb'.
 
 require 'fileutils'
 include FileUtils
 
-require_relative '../lib/falsework/trestle'
+require_relative '../lib/falsework/cliutils'
 include Falsework
 
 require 'minitest/autorun'
@@ -22,7 +22,7 @@ def cmd(c)
     # tests were invoked by 'gem check -t falsework'
     # (for a classic rubygems 1.3.7)
     begin
-      Dir.chdir(Trestle.gem_libdir + '/../../test')
+      Dir.chdir(CliUtils.gem_dir_lib.parent.parent + test)
     rescue
       raise "running tests from '#{Dir.pwd}' isn't supported: #{$!}"
     end
