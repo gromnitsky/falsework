@@ -38,7 +38,7 @@ module Falsework
     # Where @user, @email & @gecos comes from.
     GITCONFIG = '~/.gitconfig'
     # The possible dirs for templates. The first one is system-wide.
-    @@template_dirs = [CliUtils.gem_dir_lib + 'templates',
+    @@template_dirs = [CliUtils::DIR_LIB_SRC + 'templates',
                        Pathname.new(Dir.home) + ".#{Meta::NAME}" + 'templates']
     # The template used if user didn't select one.
     TEMPLATE_DEFAULT = 'ruby-cli'

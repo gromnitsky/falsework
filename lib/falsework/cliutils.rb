@@ -10,10 +10,8 @@ module Falsework
   
   # Common routines useful in any CLI program.
   class CliUtils
-    # Valid if program is executed from its source drectory.
-    DIR_LIB_SRC = Pathname.new($0).realpath.parent.parent + "lib/#{Meta::NAME}"
-    # Valid if program is installed via rubygems.
-    DIR_LIB_INSTALL = Pathname.new(Gem.dir) + "gems/#{Meta::NAME}-#{Meta::VERSION}/lib/#{Meta::NAME}"
+    # Physical location of program libraries.
+    DIR_LIB_SRC = Pathname.new File.dirname(__FILE__)
     # veputs uses this to decide to put a newline or not to put.
     NNL_MARK = '__NNL__'
 
@@ -28,13 +26,6 @@ module Falsework
     # Getter.
     def self.getVerbose
       @@verbose
-    end
-
-    # Return program install directory or fail.
-    def self.gem_dir_lib
-      t = [DIR_LIB_SRC, DIR_LIB_INSTALL, Pathname.new("lib") + Meta::NAME]
-      t.each {|i| return i if File.readable?(i) }
-      fail "all paths are invalid: #{t}"
     end
 
     # A handy method that return a nicely formatted current global

@@ -19,7 +19,7 @@ $conf.load(['foobar']) {|o|
 
 # print our env
 if $conf[:verbose] >= 2
-  puts 'Libs dir: ' + CliUtils.gem_dir_lib
+  puts 'Libs dir: ' + CliUtils::DIR_LIB_SRC
   pp $conf
 end
 

@@ -17,7 +17,7 @@ module Falsework
                   Pathname.new('/etc'),
                   Pathname.new('/usr/etc'),
                   Pathname.new('/usr/local/etc'),
-                  CliUtils.gem_dir_lib.parent.parent + 'etc']
+                  CliUtils::DIR_LIB_SRC.parent.parent + 'etc']
 
     # Example:
     #

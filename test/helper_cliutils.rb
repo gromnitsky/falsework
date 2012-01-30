@@ -22,7 +22,7 @@ def cmd(c)
     # tests were invoked by 'gem check -t falsework'
     # (for a classic rubygems 1.3.7)
     begin
-      Dir.chdir(CliUtils.gem_dir_lib.parent.parent + test)
+      Dir.chdir(CliUtils::DIR_LIB_SRC.parent.parent + test)
     rescue
       raise "running tests from '#{Dir.pwd}' isn't supported: #{$!}"
     end

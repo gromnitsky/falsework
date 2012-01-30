@@ -64,6 +64,10 @@ class TestFalsework < MiniTest::Unit::TestCase
       assert_equal(0, r[0])
       assert_equal(true, File.executable?('bin/qqq'))
       assert_equal(true, File.exist?('doc/qqq.rdoc'))
+      # smoke test of generated exe
+      r = CliUtils.exec "bin/qqq --version"
+      assert_equal 0, r[0]
+      assert_equal "0.0.1\n", r[2]
 
       r = CliUtils.exec "#{@cmd} test qqq"
       assert_equal(0, r[0])

@@ -51,7 +51,7 @@ CliUtils.errx(1, $conf[:banner]) if (ARGV.size < 2 && ARGV[0] !~ /list|upgrade/)
 
 # print our env
 if $conf[:verbose] >= 2
-  puts "Lib dir: #{CliUtils.gem_dir_lib}"
+  puts "Lib dir: #{CliUtils::DIR_LIB_SRC}"
   pp $conf
 end
 
