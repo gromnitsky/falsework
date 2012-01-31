@@ -28,6 +28,13 @@ module Falsework
       @@verbose
     end
 
+    # A handy check. Use it like:
+    #
+    # puts (CliUtils.debug ? "DEBUG mode" : "")
+    def self.debug
+      @@verbose >= 2
+    end
+
     # A handy method that return a nicely formatted current global
     # backtrace.
     def self.getBacktrace
