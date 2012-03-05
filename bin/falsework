@@ -34,7 +34,8 @@ def add_files(mode, files)
   r
 end
 
-# ----
+
+### main
 
 $conf.load {|o|
   o.on('--user STR', 'Github user.') {|i| $conf[:user] = i }
@@ -47,7 +48,7 @@ $conf.load {|o|
        'don\'t ask any questions.') { $conf[:batch] = true }
 }
 
-CliUtils.errx(1, $conf[:banner]) if (ARGV.size < 2 && ARGV[0] !~ /list|upgrade/)
+CliUtils.errx(EX_USAGE, $conf[:banner]) if (ARGV.size < 2 && ARGV[0] !~ /list|upgrade/)
 
 # print our env
 if $conf[:verbose] >= 2
