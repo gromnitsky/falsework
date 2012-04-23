@@ -1,6 +1,6 @@
 require_relative 'helper'
 
-class TestFalsework < MiniTest::Unit::TestCase
+class TestExecution < MiniTest::Unit::TestCase
   def setup
     # this runs every time before test_*
     @cmd = cmd('falsework') # get path to the exe & cd to tests directory
@@ -42,6 +42,7 @@ class TestFalsework < MiniTest::Unit::TestCase
             "templates/foo/doc/README.rdoc",
             "templates/foo/etc",
             "templates/foo/etc/foo.yaml",
+            "templates/foo/foo.gemspec",
             "templates/foo/lib",
             "templates/foo/lib/foo",
             "templates/foo/lib/foo/cliconfig.rb",
@@ -50,7 +51,6 @@ class TestFalsework < MiniTest::Unit::TestCase
             "templates/foo/test",
             "templates/foo/test/helper.rb",
             "templates/foo/test/helper_cliutils.rb",
-            "templates/foo/test/rake_git.rb",
             "templates/foo/test/test_foo.rb"]
 
     assert_equal(tree,
@@ -59,6 +59,10 @@ class TestFalsework < MiniTest::Unit::TestCase
                  })
 
     Dir.chdir('templates/foo') {
+      # check rake
+      r = CliUtils.exec "rake -T"
+      assert_equal 0, r[0]
+      
       # add files
       r = CliUtils.exec "#{@cmd} exe qqq"
       assert_equal(0, r[0])
@@ -76,7 +80,7 @@ class TestFalsework < MiniTest::Unit::TestCase
       # upgrade
       r = CliUtils.exec "#{@cmd} upgrade -b"
       assert_equal(0, r[0])
-      rm ['test/helper_cliutils.rb', 'test/rake_git.rb']
+      rm ['test/helper_cliutils.rb']
       r = CliUtils.exec "#{@cmd} upgrade -b"
       assert_equal(0, r[0])
       sed 'test/helper_cliutils.rb',

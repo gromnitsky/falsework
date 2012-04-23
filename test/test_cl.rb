@@ -1,7 +1,7 @@
 require_relative 'helper'
 require_relative '../lib/falsework/mould'
 
-class TestFalsework_3867654745 < MiniTest::Unit::TestCase
+class Test3867654745 < MiniTest::Unit::TestCase
   def setup
     # this runs every time before test_*
     @cmd = cmd('falsework') # get path to the exe & cd to tests directory
