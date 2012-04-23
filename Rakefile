@@ -17,11 +17,16 @@ ERB_DYN_SKELETON.each {|k, v|
 }
 
 desc "Generate ruby-cli dynamic files"
-task cli: ERB_DYN_SKELETON.keys
+file 'dynamic.ruby-cli' => ERB_DYN_SKELETON.keys do |t|
+  File.open(t.name, 'w+') {|fp|
+    ERB_DYN_SKELETON.keys.map {|i|
+      fp.puts i.sub(/#{Dir.pwd}\//, '')
+    }
+  }
+end
 
 # add rubi-cli dynamic files to a clobber target
 CLOBBER.concat ERB_DYN_SKELETON.keys
-#pp CLOBBER
 
 task default: [:test]
 
@@ -35,5 +40,5 @@ Rake::TestTask.new do |i|
   i.test_files = FileList['test/test_*.rb']
 end
 
-task test: [:cli]
-task build: [:cli]
+task test: ['dynamic.ruby-cli']
+task build: ['dynamic.ruby-cli']
