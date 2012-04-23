@@ -65,10 +65,10 @@ module Falsework
       return false unless file
 
       CliUtils::veputs(2, "Loading #{File.basename(file)}... " + CliUtils::NNL_MARK)
-      myconf = YAML.load_file(file) rescue CliUtils.errx(1, "cannot parse config #{file}: #{$!}")
+      myconf = YAML.load_file(file) rescue CliUtils.errx(EX_CONFIG, "cannot parse config #{file}: #{$!}")
       # preserve existing values
       @conf.merge!(myconf) {|key, oldval, newval| oldval }
-      CliUtils::veputs(2, "OK")
+      CliUtils::veputs 2, "OK"
       return true
     end
 
@@ -76,7 +76,7 @@ module Falsework
     def requiredOptions?(opts)
       opts.each {|idx|
         if !@conf.key?(idx.to_sym) || !@conf[idx.to_sym]
-          CliUtils.errx(1, "option #{idx} is either nil or missing")
+          CliUtils.errx EX_CONFIG, "option #{idx} is either nil or missing"
         end
       }
     end
@@ -84,15 +84,13 @@ module Falsework
     # Parse CLO and env variable. If block is given it is passed with
     # OptionParser object as a parameter.
     def optParse
-      o = OptionParser.new do |o|
-        o.banner = @conf[:banner]
-        o.banner = @conf[:banner]
+      OptionParser.new do |o|
         o.on('-v', 'Be more verbose.') { |i|
           self[:verbose] += 1
         }
         o.on('-V', '--version', 'Show version & exit.') { |i|
           puts Meta::VERSION
-          exit 0
+          exit EX_OK
         }
         o.on('--config NAME',
              "Set a config name or file",
@@ -110,14 +108,20 @@ module Falsework
               puts "  #{f}"
             end
           }
-          exit 0
+          exit EX_OK
         }
 
         yield o if block_given?
+        o.banner = @conf[:banner]
 
         env = nil
         env = ENV[@conf[:config_env]].shellsplit if ENV.key?(@conf[:config_env])
-        [env, ARGV].each { |i| o.parse!(i) if i }
+
+        begin
+          [env, ARGV].each { |i| o.parse!(i) if i }
+        rescue
+          CliUtils.errx EX_USAGE, $!.to_s
+        end
       end
     end
 
@@ -126,7 +130,7 @@ module Falsework
     # [reqOpts] an array of requied options
     # [&block]  a optional block for OptionParser
     def load(reqOpts = [], &block)
-      optParse &block
+      optParse(&block)
       loadFile
       requiredOptions?(reqOpts)
     end
