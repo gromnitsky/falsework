@@ -1,7 +1,7 @@
 module Falsework
   module Meta # :nodoc:
     NAME = 'falsework'
-    VERSION = '2.1.0'
+    VERSION = '2.1.1'
     AUTHOR = 'Alexander Gromnitsky'
     EMAIL = 'alexander.gromnitsky@gmail.com'
     HOMEPAGE = 'http://github.com/gromnitsky/' + NAME
