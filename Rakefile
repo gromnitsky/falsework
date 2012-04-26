@@ -9,10 +9,10 @@ require 'rdoc/task'
 # Generate dynamic targets
 require_relative 'test/rake_erb_templates'
 
-ERB_DYN_SKELETON = erb_skeletons(Meta::NAME, 'ruby-cli')
+ERB_DYN_SKELETON = erb_skeletons 'ruby-cli'
 ERB_DYN_SKELETON.each {|k, v|
   file k => [v] do |t|
-    erb_make(Meta::NAME, 'ruby-cli', t.name, t.prerequisites[0])
+    erb_make 'ruby-cli', t.name, t.prerequisites[0]
   end
 }
 

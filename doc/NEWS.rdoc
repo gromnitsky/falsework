@@ -1,3 +1,9 @@
+=== 2.2.0
+
+Thu Apr 26 09:38:44 EEST 2012
+
+* Moved system templates 2 directories lower.
+
 === 2.1.0
 
 Mon Apr 23 16:17:18 EEST 2012

@@ -8,15 +8,15 @@ class Test3867654745 < MiniTest::Unit::TestCase
   end
 
   def test_listdirs
-    assert_equal 2, Mould.class_variable_get(:@@template_dirs).size
+    assert_equal 2, Mould.template_dirs.size
     out, err = capture_io { Mould.template_dirs_add [Pathname.new("DOESN'T EXISI")] }
-    assert_equal 2, Mould.class_variable_get(:@@template_dirs).size
+    assert_equal 2, Mould.template_dirs.size
     
     assert_raises(RuntimeError) { Mould.template_dirs_add([Dir.pwd]) }
-    assert_equal 2, Mould.class_variable_get(:@@template_dirs).size
+    assert_equal 2, Mould.template_dirs.size
     
     Mould.template_dirs_add [Pathname.new(Dir.pwd)]
-    assert_equal 3, Mould.class_variable_get(:@@template_dirs).size
+    assert_equal 3, Mould.template_dirs.size
 
     assert_equal true, Mould.templates.key?("templates")
   end

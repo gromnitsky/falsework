@@ -37,9 +37,14 @@ module Falsework
   class Mould
     # Where @user, @email & @gecos comes from.
     GITCONFIG = '~/.gitconfig'
+    
     # The possible dirs for templates. The first one is system-wide.
-    @@template_dirs = [CliUtils::DIR_LIB_SRC + 'templates',
-                       Pathname.new(Dir.home) + ".#{Meta::NAME}" + 'templates']
+    @template_dirs = [CliUtils::DIR_LIB_SRC.parent.parent + 'templates',
+                      Pathname.new(Dir.home) + ".#{Meta::NAME}" + 'templates']
+    class << self
+      attr_reader :template_dirs
+    end
+    
     # The template used if user didn't select one.
     TEMPLATE_DEFAULT = 'ruby-cli'
     # A file name with configurations for the inject commands.
@@ -112,7 +117,7 @@ module Falsework
         if ! File.directory?(idx)
           CliUtils.warnx "invalid additional template directory: #{idx}"
         else
-          @@template_dirs << idx
+          @template_dirs << idx
         end
       }
     end
@@ -169,7 +174,7 @@ module Falsework
     # and corresponding directories.
     def self.templates
       r = {}
-      @@template_dirs.each {|i|
+      @template_dirs.each {|i|
         Dir.glob(i + '*').each {|j|
           r[File.basename(j)] = j if File.directory?(j)
         }

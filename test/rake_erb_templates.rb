@@ -2,6 +2,7 @@
 # -*-ruby-*-
 
 require_relative '../lib/falsework/mould'
+include Falsework
 
 # Search for all files in the project (except .git directory) for the line
 #
@@ -9,29 +10,26 @@ require_relative '../lib/falsework/mould'
 #
 # in first 4 lines. If the line is found, the file is considered a
 # skeleton for a template. Return a hash {target:template}
-def erb_skeletons(local_prj, template)
+def erb_skeletons template
   line_max = 4
-  target = File.absolute_path("lib/#{local_prj}/templates/#{template}")
+  target = Mould.template_dirs.first + template
   r = {}
-  skiplist = ['/.git[^i]?', "lib/#{local_prj}/templates", '/html', '/pkg',
+  skiplist = ['/.git[^i]?', "templates", '/html', '/pkg',
               '/test/templates', 'rake_erb_templates.rb']
 
-  Falsework::Mould.traverse('.') {|i|
+  Mould.traverse('.') {|i|
     next if File.directory?(i)
     next if File.symlink?(i)
     if skiplist.index {|ign| i.match(/\/?#{ign}\/?/) }
-#      puts "skipped: #{i}"
      next
     end
-#    puts "looking into: #{i}"
     
     File.open(i) {|fp|
       n = 0
       while n < line_max && line = fp.gets
-#        puts line
         if line =~ /^..? :erb: [^\s]+/
           t = i.sub(/^.+?\//, '')
-          r[target + '/' + t.sub(/#{local_prj}/, '%%@project%%')] = t
+          r[target.to_s + '/' + t.sub(/#{Meta::NAME}/, '%%@project%%')] = t
           break
         end
         n += 1
@@ -42,14 +40,14 @@ def erb_skeletons(local_prj, template)
   r
 end
 
-def erb_make(local_prj, template, target, tmplt)
+def erb_make template, target, tmplt
   raw = File.read(tmplt)
-  raw.gsub!(/#{local_prj}/, '<%= @project %>')
-  raw.gsub!(/#{Mould.name_camelcase(local_prj)}/, '<%= @camelcase %>')
+  raw.gsub!(/#{Meta::NAME}/, '<%= @project %>')
+  raw.gsub!(/#{Mould.name_camelcase(Meta::NAME)}/, '<%= @camelcase %>')
 
   mark = <<-EOF
 
-# Don't remove this: <%= #{Mould.name_camelcase(local_prj)}::Meta::NAME %>/<%= #{local_prj.capitalize}::Meta::VERSION %>/#{template}/<%= DateTime.now %>
+# Don't remove this: <%= #{Mould.name_camelcase(Meta::NAME)}::Meta::NAME %>/<%= #{Meta::NAME.capitalize}::Meta::VERSION %>/#{template}/<%= DateTime.now %>
   EOF
   File.open(target, 'w+') {
     |fp| fp.puts raw + ERB.new(mark).result(binding)
@@ -57,4 +55,4 @@ def erb_make(local_prj, template, target, tmplt)
 end
 
 
-pp erb_skeletons(Falsework::Meta::NAME, 'ruby-cli') if __FILE__ == $0
+pp erb_skeletons 'ruby-cli' if __FILE__ == $0

@@ -62,12 +62,12 @@ Mould.template_dirs_add $conf[:tdir].map {|i| Pathname.new i} if $conf[:tdir]
 case ARGV[0]
 when 'list'
   Mould.templates.each {|name, loc|
-    loc = '(system)' if loc == (Mould.class_variable_get(:@@template_dirs)[0] + name).to_s
+    loc = '(system)' if loc == (Mould.template_dirs.first + name).to_s
     puts "%-30s %s" % [name, loc]
   }
   
 when 'listdirs'
-  Mould.class_variable_get(:@@template_dirs).each {|idx|
+  Mould.template_dirs.each {|idx|
     puts idx
   }
   
