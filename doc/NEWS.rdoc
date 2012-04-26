@@ -1,8 +1,10 @@
-=== 2.2.0
+=== 3.0.0
 
 Thu Apr 26 09:38:44 EEST 2012
 
 * Moved system templates 2 directories lower.
+
+* Symbols in template's #config.yaml is strings.
 
 === 2.1.0
 

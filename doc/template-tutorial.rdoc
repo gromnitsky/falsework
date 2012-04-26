@@ -85,20 +85,20 @@ set it permission afterwards.
 The default configuration is:
 
  ---
- :exe:
- - :src: null
-   :dest: bin/%s'
-   :mode_int: 0744
+ exe:
+ - src: null
+   dest: bin/%s'
+   mode_int: 0744
 
- :doc:
- - :src: null
-   :dest: 'doc/%s.rdoc'
-   :mode_int: null
+ doc:
+ - src: null
+   dest: 'doc/%s.rdoc'
+   mode_int: null
 
- :test:
- - :src: null
-   :dest: 'test/test_%s.rb'
-   :mode_int: null
+ test:
+ - src: null
+   dest: 'test/test_%s.rb'
+   mode_int: null
 
 The value of each top level key is an array, so you can inject several
 files at once.

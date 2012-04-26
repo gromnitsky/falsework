@@ -1,15 +1,23 @@
 ---
-:exe:
-- :src: 'bin/%%@project%%'
-  :dest: 'bin/%s'
-  :mode_int: 0744
+exe:
+- src: 'bin/%%@project%%'
+  dest: 'bin/%s'
+  mode_int: 0744
 
-:doc:
-- :src: 'doc/#doc.rdoc'
-  :dest: 'doc/%s.rdoc'
-  :mode_int: null
+doc:
+- src: 'doc/#doc.rdoc'
+  dest: 'doc/%s.rdoc'
+  mode_int: null
 
-:test:
-- :src: 'test/test_%%@project%%.rb'
-  :dest: 'test/test_%s.rb'
-  :mode_int: null
+test:
+- src: 'test/test_%%@project%%.rb'
+  dest: 'test/test_%s.rb'
+  mode_int: null
+
+upgrade:
+  obsolete:
+    - rake_git.rb
+  files:
+    - lib/%%@project%%/cliconfig.rb
+    - lib/%%@project%%/cliutils.rb
+    - test/helper_cliutils.rb

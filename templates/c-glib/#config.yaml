@@ -1,18 +1,18 @@
 ---
-:exe:
-- :src: 'src/#exe.h'
-  :dest: 'src/%s.h'
-  :mode_int: null
-- :src: 'src/#exe.c'
-  :dest: 'src/%s.c'
-  :mode_int: null
+exe:
+- src: 'src/#exe.h'
+  dest: 'src/%s.h'
+  mode_int: null
+- src: 'src/#exe.c'
+  dest: 'src/%s.c'
+  mode_int: null
 
-:doc:
-- :src: 'doc/#doc.ascii'
-  :dest: 'doc/%s.1.asciidoc'
-  :mode_int: null
+doc:
+- src: 'doc/#doc.ascii'
+  dest: 'doc/%s.1.asciidoc'
+  mode_int: null
 
-:test:
-- :src: 'test/#test.c'
-  :dest: 'test/test_%s.c'
-  :mode_int: null
+test:
+- src: 'test/#test.c'
+  dest: 'test/test_%s.c'
+  mode_int: null

@@ -77,21 +77,21 @@ module Falsework
 
       # default config
       @conf = {
-        exe: [{
-                src: nil,
-                dest: 'bin/%s',
-                mode_int: 0744
-              }],
-        doc: [{
-                src: nil,
-                dest: 'doc/%s.rdoc',
-                mode_int: nil
-              }],
-        test: [{
-                 src: nil,
-                 dir: 'test/test_%s.rb',
-                 mode_int: nil
-               }]
+        'exe' => [{
+                    'src' => nil,
+                    'dest' => 'bin/%s',
+                    'mode_int' => 0744
+                  }],
+        'doc' => [{
+                    'src' => nil,
+                    'dest' => 'doc/%s.rdoc',
+                    'mode_int' => nil
+                  }],
+        'test' => [{
+                     'src' => nil,
+                     'dir' => 'test/test_%s.rb',
+                     'mode_int' => nil
+                   }]
       }
       Mould.config_parse(@dir_t + '/' + TEMPLATE_CONFIG, [], @conf)
       
@@ -240,13 +240,14 @@ module Falsework
       
       if File.readable?(file)
         begin
-          myconf = YAML.load_file(file)
+          myconf = YAML.load_file file
+          myconf[:file] = file
         rescue
           CliUtils.warnx "cannot parse #{file}: #{$!}"
           return false
         end
         rvars.each { |i|
-          CliUtils.warnx "missing or nil '#{i}' in #{file}" if ! myconf.key?(i.to_sym) || ! myconf[i.to_sym]
+          CliUtils.warnx "missing or nil '#{i}' in #{file}" if ! myconf.key?(i) || ! myconf[i]
           r = false
         }
         
@@ -281,14 +282,17 @@ module Falsework
       
       created = []
 
-      return [] unless @conf[mode.to_sym][0][:src]
+      unless @conf[mode][0]['src']
+        CliUtils.warnx "hash '#{mode}' is empty in #{@conf[:file]}"
+        return []
+      end
 
-      @conf[mode.to_sym].each {|idx|
-        to = idx[:dest] % target
+      @conf[mode].each {|idx|
+        to = idx['dest'] % target
 
         begin
-          Mould.extract(@dir_t + '/' + idx[:src], binding, to)
-          File.chmod(idx[:mode_int], to) if idx[:mode_int]
+          Mould.extract(@dir_t + '/' + idx['src'], binding, to)
+          File.chmod(idx['mode_int'], to) if idx['mode_int']
         rescue
           CliUtils.warnx "failed to create '#{to}' (check your #config.yaml): #{$!}"
         else
