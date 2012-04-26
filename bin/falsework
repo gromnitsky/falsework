@@ -22,6 +22,20 @@ module Commands
     
     'upgrade' => {
       :help => 'Upgrade current project',
+      :optionparse => Proc.new {|arg|
+        OptionParser.new do |o|
+          o.banner = "Usage: #{File.basename($0)} [options] upgrade [options] [command [command]]"
+          o.separator ""
+          o.on('-b', "Don't ask any questions.") {
+            $conf[:upgrader][:batch] = true
+          }
+          o.on('--save', "Keep old files as a copy with .orig", "extension.") {
+            $conf[:upgrader][:save] = true
+          }
+          
+          o.parse!(arg)
+        end
+      },
       'check' => {
         :help => 'Check if project can be upgraded'
       },
@@ -36,7 +50,18 @@ module Commands
     'new' => {
       :help => 'Create a new project',
       :arg => true,
-      :code => Proc.new {|arg| newProject arg }
+      :code => Proc.new {|arg| newProject arg },
+      :optionparse => Proc.new {|arg|
+        OptionParser.new do |o|
+          o.banner = "Usage: #{File.basename($0)} [options] new [options] NAME"
+          o.separator ""
+
+          o.on('--no-git', "Don't create a git repo.",
+               "(Will break 'ruby-cli'.)") { $conf[:git] = false }
+          
+          o.parse!(arg)
+        end
+      }
     },
     'exe' => {
       :help => 'Add a new executable to an existing project',
@@ -60,7 +85,7 @@ module Commands
     }
   }
 
-  DELIM = '~'
+  DELIM = '~<x>~'
 
   def tree start, r, indent = ''
     start.each {|key, val|
@@ -103,8 +128,15 @@ module Commands
     found = false
     format.each {|key, val|
       if key == command
+        begin
+          format[key][:optionparse].call argv if format[key][:optionparse]
+        rescue
+          CliUtils.errx EX_USAGE, $!
+        end
+        
         if format[key][:arg] || argv.size == 1
           found = true
+          CliUtils.veputs 2, "Executing '#{key}'"
           format[key][:code].call argv[1..-1]
           break
         else
@@ -118,21 +150,6 @@ module Commands
   end
   
 end
-
-$conf = CliConfig.new
-$conf[:banner] = <<EOF
-Usage: #{File.basename($0)} [options] command ...
-Available commands:
-
-#{Commands.help}
-
-EOF
-$conf[:user] = nil
-$conf[:gecos] = nil
-$conf[:email] = nil
-$conf[:template] = nil
-$conf[:batch] = false
-$conf[:git] = true
 
 def list args
   Mould.templates.each {|name, loc|
@@ -196,15 +213,33 @@ end
 
 ### main
 
+$conf = CliConfig.new
+$conf[:cl_parse_in_order] = true
+$conf[:banner] = <<EOF
+Usage: #{File.basename($0)} [options] command ...
+
+Available commands:
+
+#{Commands.help}
+
+EOF
+$conf[:user] = nil
+$conf[:gecos] = nil
+$conf[:email] = nil
+$conf[:template] = nil
+$conf[:git] = true
+$conf[:note] = true
+
+$conf[:upgrader] = {}
+$conf[:upgrader][:batch] = false
+$conf[:upgrader][:save] = false
+
 $conf.load {|o|
   o.on('--user STR', 'Github user.') {|i| $conf[:user] = i }
   o.on('--gecos STR', 'A gecos-like string.') {|i| $conf[:gecos] = i }
   o.on('--email STR') {|i| $conf[:email] = i }
-  o.on('--no-git', "Don't create a git repo.",
-       "(Will break 'ruby-cli'.)") { $conf[:git] = false }
+
   o.on('-t NAME', 'A template name.') {|i| $conf[:template] = i }
-  o.on('-b', 'Run in a batch mode and',
-       'don\'t ask any questions.') { $conf[:batch] = true }
 }
 
 CliUtils.errx(EX_USAGE, $conf[:banner]) if ARGV.size == 0

@@ -15,7 +15,7 @@ class TestCommandLine < MiniTest::Unit::TestCase
   
   def test_project_ruby_cli
     rm_rf 'templates/foo'
-    r = CliUtils.exec "#{@cmd} new templates/foo -v"
+    r = CliUtils.exec "#{@cmd} -v new templates/foo"
 #    pp r
     assert_equal(0, r[0], r)
 
@@ -96,7 +96,7 @@ class TestCommandLine < MiniTest::Unit::TestCase
 
   def test_project_c_glib
     rm_rf 'templates/c_glib'
-    r = CliUtils.exec "#{@cmd} new templates/c-glib -t c-glib --no-git"
+    r = CliUtils.exec "#{@cmd} -t c-glib new templates/c-glib --no-git"
     assert_equal(0, r[0])
 
     Dir.chdir('templates/c_glib') {

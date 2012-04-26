@@ -31,6 +31,7 @@ module Falsework
       @conf[:config_name] = Meta::NAME + '.yaml'
       @conf[:config_env] = Meta::NAME.upcase + '_CONF'
       @conf[:config_dirs] = DIR_CONFIG
+      @conf[:cl_parse_in_order] = false
     end
 
     # Setter for @conf
@@ -83,7 +84,7 @@ module Falsework
 
     # Parse CLO and env variable. If block is given it is passed with
     # OptionParser object as a parameter.
-    def optParse
+    def optParse argv
       OptionParser.new do |o|
         o.on('-v', 'Be more verbose.') { |i|
           self[:verbose] += 1
@@ -118,7 +119,13 @@ module Falsework
         env = ENV[@conf[:config_env]].shellsplit if ENV.key?(@conf[:config_env])
 
         begin
-          [env, ARGV].each { |i| o.parse!(i) if i }
+          [env, argv].each { |i|
+            if @conf[:cl_parse_in_order]
+              o.order!(i) if i
+            else
+              o.parse!(i) if i
+            end
+          }
         rescue
           CliUtils.errx EX_USAGE, $!.to_s
         end
@@ -129,8 +136,8 @@ module Falsework
     #
     # [reqOpts] an array of requied options
     # [&block]  a optional block for OptionParser
-    def load(reqOpts = [], &block)
-      optParse(&block)
+    def load(reqOpts = [], argv = ARGV, &block)
+      optParse(argv, &block)
       loadFile
       requiredOptions?(reqOpts)
     end
