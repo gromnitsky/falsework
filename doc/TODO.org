@@ -1,14 +1,21 @@
-* TODO In the distant future [3/7] [42%]
+* TODO In the distant future [5/7] [71%]
 
 - [-] more templates [1/4]
   - [X] c glib
-  - [ ] java android
   - [ ] ruby sinatra
-  - [ ] ruby cli but a lighter one
+  - [ ] ruby cli, but a lighter one
 - [X] write a small tutorial 'how to write a template'
-- [ ] release to rubygems.org (it must run test, pull to github, tag,
+- [X] release to rubygems.org (it must run test, pull to github, tag,
   create gem & upload it)
 - [ ] describe c-glib template
 - [X] normalize 'name' of the project before actually making a template
 - [X] target_uuid variable for exe/doc/test templates
-- [ ] relocate templates from lib/falsework directory to project root
+- [X] relocate templates from lib/falsework directory to project root
+- [ ] new upgrade command
+  - [ ] check if current project can be upgraded
+  - [ ] embed a note--'.falsework' file into a new generated project
+  - [ ] options to do not embed a note file
+  - [ ] list upgradeable files
+  - [ ] list obsolete files
+  - [ ] delete obsolete files
+  - [ ] upgrade in overwrite mode

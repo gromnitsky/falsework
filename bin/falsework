@@ -6,10 +6,126 @@ require_relative '../lib/falsework/mould'
 
 include Falsework
 
+module Commands
+  extend self
+
+  FORMAT = {
+    'list' => {
+      :help => 'List all available templates',
+      :code => Proc.new {|arg| list arg},
+      
+      'dirs' => {
+        :help => 'List all reachable template directories',
+        :code => Proc.new {|arg| listDirs arg}
+      }
+    },
+    
+    'upgrade' => {
+      :help => 'Upgrade current project',
+      'check' => {
+        :help => 'Check if project can be upgraded'
+      },
+      'list' => {
+        :help => 'List files that will be updated',
+        'obsolete' => {
+          :help => 'List files that can be deleted'
+        }
+      }
+    },
+
+    'new' => {
+      :help => 'Create a new project',
+      :arg => true,
+      :code => Proc.new {|arg| newProject arg }
+    },
+    'exe' => {
+      :help => 'Add a new executable to an existing project',
+      :arg => true,
+      :code => Proc.new {|arg| addFiles 'exe', arg }
+    },
+    'doc' => {
+      :help => 'Add a new documentation file to an existing project',
+      :arg => true,
+      :code => Proc.new {|arg| addFiles 'doc', arg }
+    }, 
+    'test' => {
+      :help => 'Add a new test file to an existing project',
+      :arg => true,
+      :code => Proc.new {|arg| addFiles 'test', arg }
+    },
+    'file' => {
+      :help => 'Add a new file to an existing project',
+      :arg => true,
+      :code => Proc.new {|arg| addFiles 'file', arg }
+    }
+  }
+
+  DELIM = '~'
+
+  def tree start, r, indent = ''
+    start.each {|key, val|
+      next if key.is_a?(Symbol)
+      
+      t = indent
+      t += key
+      t += ' ARG' if val[:arg]
+      t += DELIM + val[:help]
+      r[:t] << t
+
+      # recursion
+      tree val, r, indent + '  '
+    }
+  end
+
+  def help
+    r = {}
+    r[:t] = []
+    tree FORMAT, r
+
+    max = 0
+    r[:t].each {|idx|
+      left = idx.split(DELIM).first
+      max = left.size if max < left.size
+    }
+
+    r[:t].each_with_index {|idx, index|
+      left = idx.split(DELIM).first
+      spaces = ' ' + ('.' * (max - left.size)) + '.... '
+      r[:t][index].sub!(/#{DELIM}/, spaces)
+    }
+
+    r[:t].join "\n"
+  end
+
+  def traverse format, argv
+    command = argv.first
+
+    found = false
+    format.each {|key, val|
+      if key == command
+        if format[key][:arg] || argv.size == 1
+          found = true
+          format[key][:code].call argv[1..-1]
+          break
+        else
+          # recursion
+          found = traverse val, argv[1..-1]
+        end
+      end
+    }
+
+    found
+  end
+  
+end
+
 $conf = CliConfig.new
 $conf[:banner] = <<EOF
 Usage: #{File.basename($0)} [options] command ...
-Available commands: list, listdirs, (new|exe|doc|test) NAME, upgrade.
+Available commands:
+
+#{Commands.help}
+
 EOF
 $conf[:user] = nil
 $conf[:gecos] = nil
@@ -18,12 +134,55 @@ $conf[:template] = nil
 $conf[:batch] = false
 $conf[:git] = true
 
-def add_files(mode, files)
+def list args
+  Mould.templates.each {|name, loc|
+    loc = '(system)' if loc == (Mould.template_dirs.first + name).to_s
+    puts "%-30s %s" % [name, loc]
+  }
+end
+
+def listDirs args
+  Mould.template_dirs.each {|idx| puts idx }
+end
+
+def newProject args
+  CliUtils.errx EX_USAGE, 'missing argument' if args.size == 0
+  name = args.first
+  
+  if File.dirname(name) != '.'
+    Dir.chdir(File.dirname(name)) rescue CliUtils.errx(EX_UNAVAILABLE, "cannot chdir to '#{File.dirname(name)}'")
+    name = File.basename name
+  end
+
+  begin
+    m = Mould.new(name, $conf[:template],
+                  $conf[:user], $conf[:email], $conf[:gecos])
+  rescue
+    CliUtils.errx EX_SOFTWARE, $!
+  end
+  m.verbose = true if $conf[:verbose] > 0
+  m.project_seed
+
+  # create a git repository
+  if $conf[:git]
+    Dir.chdir m.project
+    CliUtils.veputs 1, "Creating a git repository in #{Dir.pwd}... __NNL__"
+    g = Git.init
+    g.add '.'
+    g.commit "Initial import from #{Falsework::Meta::NAME} #{Falsework::Meta::VERSION}."
+    CliUtils.veputs 1, 'OK'
+  end
+end
+
+def addFiles mode, files
+  CliUtils.errx EX_USAGE, 'missing argument(s)' if files.size == 0
+  
   r = true
   m = Mould.new(File.basename(Dir.pwd), $conf[:template],
                 $conf[:user], $conf[:email], $conf[:gecos])
+  
   files.each {|i|
-    created = m.add(mode, i) rescue CliUtils.errx(1, $!.to_s)
+    created = m.add(mode, i) rescue CliUtils.errx(1, $!)
     if created.size > 0
       created.each {|idx| CliUtils.veputs(1, idx) }
     else
@@ -31,7 +190,7 @@ def add_files(mode, files)
     end
   }
 
-  r
+  exit 1 unless r
 end
 
 
@@ -48,7 +207,7 @@ $conf.load {|o|
        'don\'t ask any questions.') { $conf[:batch] = true }
 }
 
-CliUtils.errx(EX_USAGE, $conf[:banner]) if (ARGV.size < 2 && ARGV[0] !~ /list|upgrade/)
+CliUtils.errx(EX_USAGE, $conf[:banner]) if ARGV.size == 0
 
 # print our env
 if $conf[:verbose] >= 2
@@ -59,55 +218,5 @@ end
 # modify a list of available template directories
 Mould.template_dirs_add $conf[:tdir].map {|i| Pathname.new i} if $conf[:tdir]
 
-case ARGV[0]
-when 'list'
-  Mould.templates.each {|name, loc|
-    loc = '(system)' if loc == (Mould.template_dirs.first + name).to_s
-    puts "%-30s %s" % [name, loc]
-  }
-  
-when 'listdirs'
-  Mould.template_dirs.each {|idx|
-    puts idx
-  }
-  
-when /exe|doc|test/
-  r1 = add_files ARGV[0], ARGV[1..-1]
-  r2 = true
-  (r2 = add_files 'doc', ARGV[1..-1]) if ARGV[0] == 'exe'
-  exit 1 if !r1 || !r2
-  
-when 'upgrade'
-  m = Mould.new(File.basename(Dir.pwd), $conf[:template],
-                $conf[:user], $conf[:email], $conf[:gecos])
-  m.verbose = true if $conf[:verbose] > 0
-  m.batch = $conf[:batch]
-  m.upgrade() rescue CliUtils.errx(1, $!.to_s)
-
-when 'new'
-  if File.dirname(ARGV[1]) != '.'
-    Dir.chdir(File.dirname(ARGV[1])) rescue CliUtils.errx(1, "cannot chdir to '#{File.dirname(ARGV[1])}'")
-    ARGV[1] = File.basename ARGV[1]
-  end
-
-  begin
-    m = Mould.new(ARGV[1], $conf[:template],
-                  $conf[:user], $conf[:email], $conf[:gecos])
-  rescue
-    CliUtils.errx 1, $!
-  end
-  m.verbose = true if $conf[:verbose] > 0
-  m.project_seed
-
-  # create a git repository
-  if $conf[:git]
-    Dir.chdir m.project
-    CliUtils.veputs(1, "Creating a git repository in #{Dir.pwd}... __NNL__")
-    g = Git.init
-    g.add '.'
-    g.commit "Initial import from #{Falsework::Meta::NAME} #{Falsework::Meta::VERSION}."
-    CliUtils.veputs(1, 'OK')
-  end
-else
-  CliUtils.errx(1, "unknown command: " + ARGV[0])
-end
+found = Commands.traverse Commands::FORMAT, ARGV
+CliUtils.errx EX_USAGE, "unknown command '#{ARGV.join ' '}'" unless found

@@ -1,15 +1,10 @@
 require_relative 'helper'
 
-class TestExecution < MiniTest::Unit::TestCase
+# Heavy & slow.
+class TestCommandLine < MiniTest::Unit::TestCase
   def setup
     # this runs every time before test_*
     @cmd = cmd('falsework') # get path to the exe & cd to tests directory
-  end
-
-  def test_project_list
-    r = CliUtils.exec "#{@cmd} list"
-    assert_equal(0, r[0])
-    assert_match(/ruby-cli/, r[2])
   end
 
   # very silly analogue of "sed -i'' -E 's/foo/bar/g' file"
@@ -67,7 +62,6 @@ class TestExecution < MiniTest::Unit::TestCase
       r = CliUtils.exec "#{@cmd} exe qqq"
       assert_equal(0, r[0])
       assert_equal(true, File.executable?('bin/qqq'))
-      assert_equal(true, File.exist?('doc/qqq.rdoc'))
       # smoke test of generated exe
       r = CliUtils.exec "bin/qqq --version"
       assert_equal 0, r[0]
@@ -78,25 +72,25 @@ class TestExecution < MiniTest::Unit::TestCase
       assert_equal(true, File.exist?('test/test_qqq.rb'))
 
       # upgrade
-      r = CliUtils.exec "#{@cmd} upgrade -b"
-      assert_equal(0, r[0])
-      rm ['test/helper_cliutils.rb']
-      r = CliUtils.exec "#{@cmd} upgrade -b"
-      assert_equal(0, r[0])
-      sed 'test/helper_cliutils.rb',
-      /^(# Don't.+falsework\/)\d+\.\d+\.\d+(\/.+)$/, '\1999.999.999\2'
-      r = CliUtils.exec "#{@cmd} upgrade -b"
-      assert_equal(1, r[0])
-      assert_match(/file .+ is from .+ falsework: 999.999.999/, r[1])
-      mv('test', 'ttt')
-      r = CliUtils.exec "#{@cmd} upgrade -b"
-      assert_equal(0, r[0])
+      # r = CliUtils.exec "#{@cmd} upgrade -b"
+      # assert_equal(0, r[0])
+      # rm ['test/helper_cliutils.rb']
+      # r = CliUtils.exec "#{@cmd} upgrade -b"
+      # assert_equal(0, r[0])
+      # sed 'test/helper_cliutils.rb',
+      # /^(# Don't.+falsework\/)\d+\.\d+\.\d+(\/.+)$/, '\1999.999.999\2'
+      # r = CliUtils.exec "#{@cmd} upgrade -b"
+      # assert_equal(1, r[0])
+      # assert_match(/file .+ is from .+ falsework: 999.999.999/, r[1])
+      # mv('test', 'ttt')
+      # r = CliUtils.exec "#{@cmd} upgrade -b"
+      # assert_equal(0, r[0])
     }
   end
 
   def test_project_invalid_name
     r = CliUtils.exec "#{@cmd} new 123"
-    assert_equal(1, r[0])
+    assert_equal(EX_SOFTWARE, r[0])
     assert_match(/invalid project name/, r[1])
   end
 
@@ -110,7 +104,6 @@ class TestExecution < MiniTest::Unit::TestCase
       assert_equal(0, r[0])
       assert_equal(true, File.exist?('src/q_q_q.h'))
       assert_equal(true, File.exist?('src/q_q_q.c'))
-      assert_equal(true, File.exist?('doc/q_q_q.1.asciidoc'))
 
       r = CliUtils.exec "#{@cmd} -t c-glib test q-q-q"
       assert_equal(0, r[0])
@@ -133,4 +126,21 @@ class TestExecution < MiniTest::Unit::TestCase
       }
     }
   end
+
+  def test_new_dir_from_config
+    r = CliUtils.exec "#{@cmd} --config /NO_SUCH_FILE.yaml list dirs"
+    assert_equal(0, r[0])
+    assert_equal(2, r[2].split("\n").size)
+    
+    r = CliUtils.exec "#{@cmd} --config templates/config-01.yaml list dirs"
+    assert_equal(0, r[0])
+    assert_equal(3, r[2].split("\n").size)
+  end
+
+  def test_project_list
+    r = CliUtils.exec "#{@cmd} list"
+    assert_equal(0, r[0])
+    assert_match(/ruby-cli/, r[2])
+  end
+
 end

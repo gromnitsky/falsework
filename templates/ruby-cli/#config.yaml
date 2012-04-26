@@ -21,3 +21,4 @@ upgrade:
     - lib/%%@project%%/cliconfig.rb
     - lib/%%@project%%/cliutils.rb
     - test/helper_cliutils.rb
+  from: 2.0.0
