@@ -28,7 +28,7 @@ class TestUpgrader < MiniTest::Unit::TestCase
     assert_match /directory .+ is unreadable/, e.message
 
     e = assert_raises(UpgradeError) { Upgrader.new 'templates' }
-    assert_match /No such file or directory - templates\/.#{Meta::NAME}/, e.message
+    assert_match /No such file or directory - .+\.#{Meta::NAME}/, e.message
     
     e = assert_raises(UpgradeError) { Upgrader.new nil, nil }
     assert_match /directory  is unreadable/, e.message

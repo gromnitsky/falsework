@@ -34,7 +34,7 @@ module Falsework
 
     def initialize dir, note = Mould::NOTE
       fail UpgradeError, "directory #{dir} is unreadable" unless dir && File.readable?(dir)
-      @dir = Pathname.new dir
+      @dir = Pathname.new File.realpath(dir)
 
       begin
         @note = Upgrader.noteLoad(@dir + note)
@@ -42,7 +42,7 @@ module Falsework
         fail UpgradeError, "operation isn't possible: #{$!}"
       end
 
-      @mould = Mould.new dir, @note[Meta::NAME]['template']
+      @mould = Mould.new File.basename(@dir.parent), @note[Meta::NAME]['template']
       @template_dir = Pathname.new(Mould.templates[@note[Meta::NAME]['template']])
       @project = @mould.project
 

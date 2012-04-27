@@ -81,14 +81,14 @@ module Falsework
     # [gecos] A full author name from ~/.gitconfig.
     def initialize(project, template, user = nil, email = nil, gecos = nil)
       @project = Mould.name_project project
-      raise MouldError, "invalid project name '#{project}'" if !Mould.name_valid? @project
+      raise MouldError, "invalid project name '#{project}'" unless Mould.name_valid?(@project)
       @camelcase = Mould.name_camelcase project
       @classy = Mould.name_classy project
       
       @verbose = false
       @batch = false
-      @template = template
-      @dir_t = Mould.templates[@template || TEMPLATE_DEFAULT] || fail(MouldError, "no such template: #{template}")
+      @template = template || TEMPLATE_DEFAULT
+      @dir_t = Mould.templates[@template] || fail(MouldError, "no such template: #{template}")
 
       # default config
       @conf = {
