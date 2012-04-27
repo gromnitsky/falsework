@@ -21,10 +21,11 @@ class TestCommandLine < MiniTest::Unit::TestCase
 
     out = r[2].split("\n")
     assert_match(/^Project path: \//, out[0])
-    assert_equal("L: README.rdoc => doc/README.rdoc", out[-2])
+    assert_equal "N: .falsework", out[-2]
     assert_match(/Creating a git repository in .+... OK/, out[-1])
 
-    tree = ["templates/foo/.git",
+    tree = ["templates/foo/.falsework",
+            "templates/foo/.git",
             "templates/foo/.gitignore",
             "templates/foo/Gemfile",
             "templates/foo/README.rdoc",

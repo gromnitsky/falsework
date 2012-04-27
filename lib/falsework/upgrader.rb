@@ -17,27 +17,30 @@ module Falsework
   end
 
   class Upgrader
-    NOTE = '.' + Meta::NAME
-
-    def self.noteLoad file = NOTE
-      r = YAML.load_file(file) rescue fail(UpgradeError, $!)
+    def self.noteLoad file = Mould::NOTE
+      r = YAML.load_file(file) rescue fail($!.to_s)
       
-      fail UpgradeError, 'no project name' unless Utils.all_set?(r['project']['classy'])
-      fail UpgradeError, "no #{Meta::NAME} version" unless Utils.all_set?(r[Meta::NAME]['version'])
+      fail 'no project name' unless Utils.all_set?(r['project']['classy'])
+      fail "no #{Meta::NAME} version" unless Utils.all_set?(r[Meta::NAME]['version'])
       r[Meta::NAME]['version'] = Gem::Version.new r[Meta::NAME]['version']
-      fail UpgradeError, "no #{Meta::NAME} template" unless Utils.all_set?(r[Meta::NAME]['template'])
+      fail "no #{Meta::NAME} template" unless Utils.all_set?(r[Meta::NAME]['template'])
 
       unless Mould.templates[r[Meta::NAME]['template']]
-        fail UpgradeError, "unknown template '#{r[Meta::NAME]['template']}'"
+        fail "unknown template '#{r[Meta::NAME]['template']}'"
       end
 
       r
     end
 
-    def initialize dir, note = NOTE
+    def initialize dir, note = Mould::NOTE
       fail UpgradeError, "directory #{dir} is unreadable" unless dir && File.readable?(dir)
       @dir = Pathname.new dir
-      @note = Upgrader.noteLoad(@dir + note)
+
+      begin
+        @note = Upgrader.noteLoad(@dir + note)
+      rescue
+        fail UpgradeError, "operation isn't possible: #{$!}"
+      end
 
       @mould = Mould.new dir, @note[Meta::NAME]['template']
       @template_dir = Pathname.new(Mould.templates[@note[Meta::NAME]['template']])

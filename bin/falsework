@@ -2,7 +2,7 @@
 # -*-ruby-*-
 
 require_relative '../lib/falsework/cliconfig'
-require_relative '../lib/falsework/mould'
+require_relative '../lib/falsework/upgrader'
 
 include Falsework
 
@@ -37,7 +37,8 @@ module Commands
         end
       },
       'check' => {
-        :help => 'Check if project can be upgraded'
+        :help => 'Check if project can be upgraded',
+        :code => Proc.new {|arg| upgradeCheck arg}
       },
       'list' => {
         :help => 'List files that will be updated',
@@ -58,6 +59,9 @@ module Commands
 
           o.on('--no-git', "Don't create a git repo.",
                "(Will break 'ruby-cli'.)") { $conf[:git] = false }
+          o.on('--no-note', "Don't create a note file.") {
+            $conf[:note] = false
+          }
           
           o.parse!(arg)
         end
@@ -171,14 +175,18 @@ def newProject args
     name = File.basename name
   end
 
+  ok = false
   begin
     m = Mould.new(name, $conf[:template],
                   $conf[:user], $conf[:email], $conf[:gecos])
+    m.verbose = true if $conf[:verbose] > 0
+    ok = m.project_seed
   rescue
     CliUtils.errx EX_SOFTWARE, $!
   end
-  m.verbose = true if $conf[:verbose] > 0
-  m.project_seed
+  CliUtils.errx EX_SOFTWARE, "hm, nothing was created" unless ok
+
+  m.noteCreate if $conf[:note]
 
   # create a git repository
   if $conf[:git]
@@ -208,6 +216,17 @@ def addFiles mode, files
   }
 
   exit 1 unless r
+end
+
+def upgradeCheck args
+  u = Upgrader.new '.'
+  if u.able?
+    CliUtils.veputs 1, "Yup, it's possible."
+  else
+    CliUtils.errx EX_UNAVAILABLE, "this project cannot be upgraded, sorry"
+  end
+rescue UpgradeError
+  CliUtils.errx EX_UNAVAILABLE, $!
 end
 
 

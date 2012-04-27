@@ -14,11 +14,10 @@ module Falsework
 
     alias :orig_to_s :to_s
     def to_s
-      "upgrade: #{orig_to_s}"
+      "generator: #{orig_to_s}"
     end
   end
 
-  
   # The directory with template may have files beginning with # char
   # which will be ignored in #project_seed (a method that creates a
   # shiny new project form a template).
@@ -63,6 +62,8 @@ module Falsework
     TEMPLATE_CONFIG = '#config.yaml'
     # A list of files to ignore in any template.
     IGNORE_FILES = ['.gitignore']
+    # Note file name
+    NOTE = '.' + Meta::NAME
 
     # A verbose level for -v CLO.
     attr_accessor :verbose
@@ -80,14 +81,14 @@ module Falsework
     # [gecos] A full author name from ~/.gitconfig.
     def initialize(project, template, user = nil, email = nil, gecos = nil)
       @project = Mould.name_project project
-      raise "invalid project name '#{project}'" if !Mould.name_valid? @project
+      raise MouldError, "invalid project name '#{project}'" if !Mould.name_valid? @project
       @camelcase = Mould.name_camelcase project
       @classy = Mould.name_classy project
       
       @verbose = false
       @batch = false
       @template = template
-      @dir_t = Mould.templates[@template || TEMPLATE_DEFAULT] || fail("no such template: #{template}")
+      @dir_t = Mould.templates[@template || TEMPLATE_DEFAULT] || fail(MouldError, "no such template: #{template}")
 
       # default config
       @conf = {
@@ -107,7 +108,7 @@ module Falsework
                      'mode_int' => nil
                    }]
       }
-      Mould.config_parse(@dir_t + '/' + TEMPLATE_CONFIG, [], @conf)
+      Mould.config_parse(@dir_t + TEMPLATE_CONFIG, [], @conf)
       
       gc = Git.global_config rescue gc = {}
       @user = user || gc['github.user']
@@ -190,7 +191,7 @@ module Falsework
       r = {}
       @template_dirs.each {|i|
         Dir.glob(i + '*').each {|j|
-          r[File.basename(j)] = j if File.directory?(j)
+          r[File.basename(j)] = Pathname.new(j) if File.directory?(j)
         }
       }
       r
@@ -199,7 +200,7 @@ module Falsework
     # Generate a new project in @project directory from @template.
     #
     # Return false if nothing was extracted.
-    def project_seed()
+    def project_seed
       uuid = Mould.uuidgen_fake # useful variable for the template
       
       # check for existing project
@@ -212,7 +213,7 @@ module Falsework
       puts "Template: #{@dir_t}" if @verbose
       symlinks = []
       Dir.chdir(@project) {
-        Mould.traverse(@dir_t) {|idx|
+        Mould.traverse(@dir_t.to_s) {|idx|
           file = idx.sub(/^#{@dir_t}\//, '')
           next if IGNORE_FILES.index {|i| file.match(/#{i}$/) }
 
@@ -289,7 +290,7 @@ module Falsework
     def add(mode, target)
       target_orig = target
       target = Mould.name_project target_orig
-      raise "invalid target name '#{target_orig}'" if !Mould.name_valid? target
+      fail MouldError, "invalid target name '#{target_orig}'" if !Mould.name_valid? target
       target_camelcase = Mould.name_camelcase target_orig
       target_classy = Mould.name_classy target_orig
       uuid = Mould.uuidgen_fake
@@ -305,7 +306,7 @@ module Falsework
         to = idx['dest'] % target
 
         begin
-          Mould.extract(@dir_t + '/' + idx['src'], binding, to)
+          Mould.extract @dir_t + idx['src'], binding, to
           File.chmod(idx['mode_int'], to) if idx['mode_int']
         rescue
           CliUtils.warnx "failed to create '#{to}' (check your #config.yaml): #{$!}"
@@ -375,6 +376,28 @@ module Falsework
 
     def getBinding
       binding
+    end
+
+
+    def noteCreate
+      h = {
+        'project' => {
+          'classy' => @classy,
+          'created' => DateTime.now.iso8601
+        },
+        Meta::NAME => {
+          'version' => Meta::VERSION,
+          'template' => @template
+        }
+      }
+
+      file = @project +'/'+ NOTE
+      File.open(file, 'w+') {|fp|
+        puts "N: #{File.basename(file)}" if @verbose
+        fp.puts "# DO NOT DELETE THIS FILE"
+        fp.puts "# unless you don't want to upgrade scaffolds in the future."
+        fp.puts h.to_yaml
+      }
     end
     
   end

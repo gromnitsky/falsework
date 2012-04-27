@@ -1,6 +1,6 @@
-* TODO In the distant future [5/7] [71%]
+* TODO In the distant future [7/11] [63%]
 
-- [-] more templates [1/4]
+- [-] more templates [1/3]
   - [X] c glib
   - [ ] ruby sinatra
   - [ ] ruby cli, but a lighter one
@@ -11,14 +11,14 @@
 - [X] normalize 'name' of the project before actually making a template
 - [X] target_uuid variable for exe/doc/test templates
 - [X] relocate templates from lib/falsework directory to project root
-- [ ] project creation
-  - [ ] embed a note--'.falsework' file into a new generated project
-  - [ ] options to do not embed a note file
+- [X] project creation
+  - [X] embed a note--'.falsework' file into a new generated project
+  - [X] options to do not embed a note file
 - [ ] new upgrade command
   - [ ] check if current project can be upgraded
   - [ ] list upgradeable files
   - [ ] list obsolete files
   - [ ] delete obsolete files
   - [ ] upgrade in overwrite mode
-- [ ] check in 'falsework' executable for exceptions in mould.rb
+- [X] check in 'falsework' executable for exceptions in mould.rb
 - [ ] move project creation factory to utils.rb
