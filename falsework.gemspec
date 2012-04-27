@@ -25,4 +25,6 @@ Gem::Specification.new do |gem|
   gem.add_dependency "rdoc", "~> 3.12"
   gem.add_dependency "bundler", "~> 1.1.3"
   gem.add_dependency "git", "~>1.2.5"
+
+  gem.add_development_dependency "fakefs", "~> 0.4.0"
 end

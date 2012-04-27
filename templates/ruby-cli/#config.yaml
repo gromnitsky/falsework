@@ -16,7 +16,7 @@ test:
 
 upgrade:
   obsolete:
-    - rake_git.rb
+    - test/rake_git.rb
   files:
     - lib/%%@project%%/cliconfig.rb
     - lib/%%@project%%/cliutils.rb

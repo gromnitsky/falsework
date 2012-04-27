@@ -7,6 +7,18 @@ require 'yaml'
 require_relative 'cliutils'
 
 module Falsework
+  class MouldError < StandardError
+    def initialize msg
+      super msg
+    end
+
+    alias :orig_to_s :to_s
+    def to_s
+      "upgrade: #{orig_to_s}"
+    end
+  end
+
+  
   # The directory with template may have files beginning with # char
   # which will be ignored in #project_seed (a method that creates a
   # shiny new project form a template).
@@ -58,6 +70,8 @@ module Falsework
     attr_accessor :batch
     # A directory of a new generated project.
     attr_reader :project
+    # template configuration
+    attr_reader :conf
 
     # [project] A name of the future project; may include all crap with spaces.
     # [template] A name of the template for the project.
@@ -73,7 +87,7 @@ module Falsework
       @verbose = false
       @batch = false
       @template = template
-      @dir_t = Mould.templates[@template || TEMPLATE_DEFAULT] || CliUtils.errx(1, "no such template: #{template}")
+      @dir_t = Mould.templates[@template || TEMPLATE_DEFAULT] || fail("no such template: #{template}")
 
       # default config
       @conf = {
@@ -103,7 +117,7 @@ module Falsework
       [['github.user', @user],
        ['user.email', @email],
        ['user.name', @gecos]].each {|i|
-        CliUtils.errx(1, "missing #{i.first} in #{GITCONFIG}") if i.last.to_s == ''
+        fail MouldError, "missing #{i.first} in #{GITCONFIG}" if i.last.to_s == ''
       }
     end
 
@@ -189,7 +203,7 @@ module Falsework
       uuid = Mould.uuidgen_fake # useful variable for the template
       
       # check for existing project
-      CliUtils.errx(1, "directory '#{@project}' is not empty") if Dir.glob(@project + '/*').size > 0
+      fail MouldError, "directory '#{@project}' is not empty" if Dir.glob(@project + '/*').size > 0
 
       Dir.mkdir @project unless File.directory?(@project)
       puts "Project path: #{File.expand_path(@project)}" if @verbose
@@ -259,7 +273,7 @@ module Falsework
       r
     end
     
-    # Add an executable or a test from the template.
+    # Add a file from the template.
     #
     # [mode] Is either 'exe', 'doc' or 'test'.
     # [target] A test/doc/exe file to create.
@@ -325,14 +339,14 @@ module Falsework
     # Extract file @from into @to.
     #
     # [binding] A binding for eval.
-    def self.extract(from, binding, to)
-      t = ERB.new(File.read(from))
-      t.filename = from # to report errors relative to this file
+    def self.extract from, binding, to
+      t = ERB.new File.read(from.to_s)
+      t.filename = from.to_s # to report errors relative to this file
       begin
         output = t.result(binding)
         md5_system = Digest::MD5.hexdigest(output)
       rescue Exception
-        CliUtils.errx(1, "bogus template file '#{from}': #{$!}")
+        fail MouldError, "bogus template file '#{from}': #{$!}"
       end
 
       if ! File.exists?(to)
@@ -340,15 +354,13 @@ module Falsework
         begin
           File.open(to, 'w+') { |fp| fp.puts output }
           # transfer the exec bit to the generated result
-          File.chmod(0744, to) if File.stat(from).executable?
+          File.chmod(0744, to) if !defined?(FakeFS) && File.stat(from.to_s).executable?
         rescue
-          CliUtils.errx(1, "cannot generate: #{$!}")
+          fail MouldError, "cannot generate: #{$!}"
         end
-      elsif
+      else
         # warn a careless user
-        if md5_system != Digest::MD5.file(to).hexdigest
-          CliUtils.errx(1, "'#{to}' already exists")
-        end
+        CliUtils.warnx "'#{to}' already exists" if md5_system != Digest::MD5.file(to).hexdigest
       end
     end
 
@@ -361,5 +373,9 @@ module Falsework
       t.sub(/\.#erb$/, '')
     end
 
+    def getBinding
+      binding
+    end
+    
   end
 end
