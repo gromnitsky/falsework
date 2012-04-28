@@ -54,7 +54,7 @@ module Falsework
         }
       end
 
-      CliUtils.warnx "no config file '#{@conf[:config_name]}' found" if @conf[:verbose] >= 2
+      CliUtils.warnx "config file '#{@conf[:config_name]}' not found" if @conf[:verbose] >= 2
       return nil
     end
 
@@ -74,8 +74,8 @@ module Falsework
     # Check if options in array opts are in @conf.
     def requiredOptions?(opts)
       opts.each {|idx|
-        if !@conf.key?(idx.to_sym) || !@conf[idx.to_sym]
-          CliUtils.errx EX_CONFIG, "option #{idx} is either nil or missing"
+        if !@conf.key?(idx) || !@conf[idx]
+          CliUtils.errx EX_CONFIG, "option '#{idx}' is either nil or missing"
         end
       }
     end

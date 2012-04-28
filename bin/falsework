@@ -300,7 +300,7 @@ if $conf[:verbose] >= 2
 end
 
 # modify a list of available template directories
-Mould.template_dirs_add $conf[:tdir].map {|i| Pathname.new i} if $conf[:tdir]
+Mould.template_dirs_add $conf['tdir'].map {|i| Pathname.new i} if $conf['tdir']
 
 found = Commands.traverse Commands::FORMAT, ARGV
 CliUtils.errx EX_USAGE, "unknown command '#{ARGV.join ' '}'" unless found

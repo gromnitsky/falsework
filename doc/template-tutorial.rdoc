@@ -15,6 +15,11 @@ Your personal templates must be in <tt>~/.falsework/templates</tt>
 directory. To view all currently available templates, run <tt>falsework
 list</tt>.
 
+To add another directory to a search list (visible via <tt>falsework
+list dirs</tt>), modify value of +tdir+ key in
+<tt>~/.falsework/falsework.yaml</tt>. The value must be an array of
+readable directories.
+
 
 == Hierarchy
 
@@ -112,8 +117,8 @@ dest::      Sub-key can have <tt>%s</tt> in it which will be replaced with
 
 mode_int::  Permission bits.
 
-Top level keys must be one of: +exe+, +doc+, +test+ or +file+
-strings. Each of these string corresponds to a hard-coded command in
+Top level keys must be one of: +exe+, +doc+, +test+ or +file+ string
+values. Each of these strings correspond to a hard-coded command in
 +falsework+ executable.
 
 
@@ -121,7 +126,7 @@ strings. Each of these string corresponds to a hard-coded command in
 
 Any template may have instructions for updating files in old
 projects. To make your template 'upgradable', add to
-<tt>#config.yaml</tt> file:
+<tt>#config.yaml</tt>:
 
  version: 2.3.4
  upgrade:

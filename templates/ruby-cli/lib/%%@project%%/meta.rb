@@ -1,3 +1,4 @@
+# :include: ../../README.rdoc
 module <%= @camelcase %>
   module Meta # :nodoc:
     NAME = '<%= @project %>'

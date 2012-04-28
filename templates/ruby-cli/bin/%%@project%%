@@ -6,13 +6,13 @@ include <%= @camelcase %>
 
 $conf = CliConfig.new
 $conf[:banner] = "Usage: #{File.basename($0)} [options] hren'"
-$conf[:foobar] = ''
+
 
 ### main
 
 $conf.load(['foobar']) {|o|
-  o.on('--foobar STR', 'An example of the option --foobar') {|i|
-    $conf[:foobar] = i
+  o.on('--foobar STR', 'An example of the --foobar option') {|i|
+    $conf['foobar'] = i
   }
 }
 

@@ -1,21 +1,21 @@
-=Name
+= Name
 
 <%= @classy %>--[TODO: write a summary here.]
 
 
-==Synopsis
+== Synopsis
 
  <%= @project %> [options]
 
 
-==Description
+== Description
 
 The <%= @project %> utility [TODO: write a description here.]
 
 The options are as follows:
 
 --config-dirs::             List all possible locations for the
-                            configuration file. The first found wins.
+                            configuration file.
 
 --config NAME::             The name of the configuration file. If
                             it contains <tt>/</tt> in it, the list from
@@ -29,28 +29,26 @@ The options are as follows:
 
 --foobar NAME::             Huh?
 
-==Configuration
 
-<%= @project %> looks for its configuration at 3 places at start up.
+== Configuration
 
-1. At <tt><%= @project.upcase %>_CONF</tt> env variable.
+From the least significant to the most:
+
+1. <tt><%= @project.upcase %>_CONF</tt> env variable.
    (Its format is exactly similar to CL options.)
 
-2. At the configuration file. Its default name is
-   <tt><%= @project %>.yaml</tt> and it can be stored in several
-   system directories which are observable by <tt>--config--dirs</tt> CL
-   option.
+2. Configuration file. Its default name is <tt><%= @project %>.yaml</tt>
+   and it can be stored in several directories which are observable by
+   <tt>--config--dirs</tt> CL option.
 
-3. At command line.
-
-Higher number levels overrides the values from lower number levels.
+3. Command line.
 
 The configuration file must be in YAML format. Look into <tt>`gem env
-gemdir`/gems/<%= @project %>-x.y.z/etc/</tt> directory for samples.
+gemdir`/gems/<%= @project %>-x.y.z/etc/</tt> directory for examples.
 
 
-==Examples
+== Examples
 
- % ri <%= @camelcase %>
- % <%= @project %> --config-dirs
- % <%= @project %> -V
+ $ ri <%= @camelcase %> # after gem installation
+ $ <%= @project %> --config-dirs
+ $ <%= @project %> -V
