@@ -85,7 +85,7 @@ class TestUpgrader < MiniTest::Unit::TestCase
       # make a skeleton
       checksum_old = []
       u.files.each {|idx|
-        f = Mould.get_filename(idx, u.getProjectBinding)
+        f = Mould.resolve_filename(idx, u.getProjectBinding)
         FileUtils.mkdir_p File.dirname(f)
         FileUtils.touch f
         checksum_old << Digest::MD5.file(f)
@@ -95,7 +95,7 @@ class TestUpgrader < MiniTest::Unit::TestCase
 
       checksum_new = []
       u.files.each {|idx|
-        f = Mould.get_filename(idx, u.getProjectBinding)
+        f = Mould.resolve_filename(idx, u.getProjectBinding)
         assert File.readable?(f + '.orig')
         checksum_new << Digest::MD5.file(f)
       }

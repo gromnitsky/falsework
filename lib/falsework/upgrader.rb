@@ -42,7 +42,7 @@ module Falsework
         fail UpgradeError, "operation isn't possible: #{$!}"
       end
 
-      @mould = Mould.new File.basename(@dir.parent), @note[Meta::NAME]['template']
+      @mould = Mould.new File.basename(@dir), @note[Meta::NAME]['template']
       @template_dir = Pathname.new(Mould.templates[@note[Meta::NAME]['template']])
       @project = @mould.project
 
@@ -93,8 +93,9 @@ module Falsework
     
     def obsolete_rm
       obsolete.each {|idx|
-        next unless userSaidYes 'rm', idx
-        FileUtils.rm_rf idx
+        f = Mould.resolve_filename idx, getProjectBinding
+        next unless userSaidYes 'rm', f
+        FileUtils.rm_rf f
       }
     end
 
@@ -102,7 +103,7 @@ module Falsework
       fail UpgradeError, "this project cannot be upgraded" unless able?
 
       files.each {|idx|
-        f = Mould.get_filename idx, @mould.getBinding
+        f = Mould.resolve_filename idx, @mould.getBinding
 
         next unless userSaidYes 'update', f
         

@@ -16,9 +16,9 @@
   - [X] options to do not embed a note file
 - [-] new upgrade command
   - [X] check if current project can be upgraded
-  - [ ] list upgradeable files
-  - [ ] list obsolete files
-  - [ ] delete obsolete files
+  - [X] list upgradeable files
+  - [X] list obsolete files
+  - [X] delete obsolete files
   - [ ] upgrade in overwrite mode
 - [X] check in 'falsework' executable for exceptions in mould.rb
 - [ ] move project creation factory to utils.rb

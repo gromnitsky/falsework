@@ -1,3 +1,5 @@
+require 'fakefs/safe'
+
 require_relative 'helper'
 require_relative '../lib/falsework/mould'
 
@@ -7,19 +9,27 @@ class TestMould < MiniTest::Unit::TestCase
     @cmd = cmd('falsework') # get path to the exe & cd to tests directory
   end
 
-  def test_config_parse
-    refute Mould.config_parse "DOESN'T EXIST", nil, nil
+  def test_configParse
+    ClearFakeFS do
+      FileUtils.mkdir_p 't/ruby-cli'
+      Mould.template_dirs.unshift Pathname.new('t')
 
-    o = {}
-    r = Mould.config_parse File.dirname(@cmd) + '/../etc/falsework.yaml', [], o
-    assert_equal true, r
+      # no template config file
+      m = Mould.new 'foo', nil
+      refute m.conf[:upgrade]
 
-    o = { foo: 1 }
-    out, err = capture_io do
-      r = Mould.config_parse File.dirname(@cmd) + '/../etc/falsework.yaml', ['bar'], o
+      # invalid template config file
+      File.open('t/ruby-cli/'+Mould::TEMPLATE_CONFIG, 'w+') {|fp|
+        fp.puts 'garbage'
+      }
+      out, err = capture_io { m = Mould.new 'foo', nil }
+      assert_match /cannot parse/, err
+
+      Mould.template_dirs.shift
     end
-    assert_match "missing or nil 'bar' in", err
-    refute r
+
+    m = Mould.new 'foo', nil
+    assert_equal 'lib/%%@project%%/cliconfig.rb', m.conf['upgrade']['files'].first
   end
 
   def test_name_project
@@ -59,15 +69,15 @@ class TestMould < MiniTest::Unit::TestCase
     assert_equal 'FoobarPro', Mould.name_camelcase('foobar#pro,')
   end
 
-  def test_get_filename
+  def test_resolve_filename
     f = 'foo'
     b = 'bar'
     
-    assert_equal '', Mould.get_filename(nil, binding)
-    assert_equal '', Mould.get_filename('', binding)
-    assert_equal 'f/b', Mould.get_filename('f/b', binding)
-    assert_equal 'f/bar/q.txt', Mould.get_filename('f/%%b%%/q.txt', binding)
-    assert_equal 'foo/bar/q.txt', Mould.get_filename('%%f%%/%%b%%/q.txt', binding)
+    assert_equal '', Mould.resolve_filename(nil, binding)
+    assert_equal '', Mould.resolve_filename('', binding)
+    assert_equal 'f/b', Mould.resolve_filename('f/b', binding)
+    assert_equal 'f/bar/q.txt', Mould.resolve_filename('f/%%b%%/q.txt', binding)
+    assert_equal 'foo/bar/q.txt', Mould.resolve_filename('%%f%%/%%b%%/q.txt', binding)
   end
 
   def test_uuid

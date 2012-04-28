@@ -42,9 +42,15 @@ module Commands
       },
       'list' => {
         :help => 'List files that will be updated',
+        :code => Proc.new {|arg| upgradeListFiles arg },
         'obsolete' => {
-          :help => 'List files that can be deleted'
+          :help => 'List files that can be deleted',
+          :code => Proc.new {|arg| upgradeListObsolete arg }
         }
+      },
+      'obsolete' => {
+        :help => 'Remove obsolete files',
+        :code => Proc.new {|arg| upgradeObsoleteRm arg }
       }
     },
 
@@ -179,7 +185,6 @@ def newProject args
   begin
     m = Mould.new(name, $conf[:template],
                   $conf[:user], $conf[:email], $conf[:gecos])
-    m.verbose = true if $conf[:verbose] > 0
     ok = m.project_seed
   rescue
     CliUtils.errx EX_SOFTWARE, $!
@@ -225,6 +230,38 @@ def upgradeCheck args
   else
     CliUtils.errx EX_UNAVAILABLE, "this project cannot be upgraded, sorry"
   end
+rescue UpgradeError
+  CliUtils.errx EX_UNAVAILABLE, $!
+end
+
+def upgradeListFiles args
+  u = Upgrader.new '.'
+  exit EX_UNAVAILABLE unless u.able?
+  u.files.each {|i|
+    puts Mould.resolve_filename i, u.getProjectBinding
+  }
+rescue UpgradeError
+  CliUtils.errx EX_UNAVAILABLE, $!
+end
+
+def upgradeListObsolete args
+  u = Upgrader.new '.'
+  exit EX_UNAVAILABLE unless u.able?
+  exit EX_UNAVAILABLE unless u.obsolete.size > 0
+  u.obsolete.each {|i|
+    puts Mould.resolve_filename i, u.getProjectBinding
+  }
+rescue UpgradeError
+  CliUtils.errx EX_UNAVAILABLE, $!
+end
+
+def upgradeObsoleteRm args
+  u = Upgrader.new '.'
+  u.batch = $conf[:upgrader][:batch]
+    
+  exit EX_UNAVAILABLE unless u.able?
+  exit EX_UNAVAILABLE unless u.obsolete.size > 0
+  u.obsolete_rm
 rescue UpgradeError
   CliUtils.errx EX_UNAVAILABLE, $!
 end

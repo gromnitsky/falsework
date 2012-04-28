@@ -65,10 +65,6 @@ module Falsework
     # Note file name
     NOTE = '.' + Meta::NAME
 
-    # A verbose level for -v CLO.
-    attr_accessor :verbose
-    # -b CLO.
-    attr_accessor :batch
     # A directory of a new generated project.
     attr_reader :project
     # template configuration
@@ -85,10 +81,9 @@ module Falsework
       @camelcase = Mould.name_camelcase project
       @classy = Mould.name_classy project
       
-      @verbose = false
       @batch = false
       @template = template || TEMPLATE_DEFAULT
-      @dir_t = Mould.templates[@template] || fail(MouldError, "no such template: #{template}")
+      @dir_t = Mould.templates[@template] || fail(MouldError, "template '#{@template}' not found")
 
       # default config
       @conf = {
@@ -108,7 +103,7 @@ module Falsework
                      'mode_int' => nil
                    }]
       }
-      Mould.config_parse(@dir_t + TEMPLATE_CONFIG, [], @conf)
+      configParse
       
       gc = Git.global_config rescue gc = {}
       @user = user || gc['github.user']
@@ -207,10 +202,10 @@ module Falsework
       fail MouldError, "directory '#{@project}' is not empty" if Dir.glob(@project + '/*').size > 0
 
       Dir.mkdir @project unless File.directory?(@project)
-      puts "Project path: #{File.expand_path(@project)}" if @verbose
+      CliUtils.veputs 1, "Project path: #{File.expand_path(@project)}"
 
       r = false
-      puts "Template: #{@dir_t}" if @verbose
+      CliUtils.veputs 1, "Template: #{@dir_t}"
       symlinks = []
       Dir.chdir(@project) {
         Mould.traverse(@dir_t.to_s) {|idx|
@@ -220,14 +215,14 @@ module Falsework
           if File.symlink?(idx)
             # we'll process them later on
             is_dir = File.directory?(@dir_t + '/' + File.readlink(idx))
-            symlinks << [Mould.get_filename(File.readlink(idx), binding),
-                         Mould.get_filename(file, binding)]
+            symlinks << [Mould.resolve_filename(File.readlink(idx), binding),
+                         Mould.resolve_filename(file, binding)]
           elsif File.directory?(idx)
-            puts "D: #{file}"  if @verbose
-            Dir.mkdir Mould.get_filename(file, binding)
+            CliUtils.veputs 1, "D: #{file}"
+            Dir.mkdir Mould.resolve_filename(file, binding)
           else
-            puts "N: #{file}" if @verbose
-            to = Mould.get_filename(file, binding)
+            CliUtils.veputs 1, "N: #{file}"
+            to = Mould.resolve_filename(file, binding)
             Mould.extract(idx, binding, to)
           end
           r = true
@@ -237,7 +232,7 @@ module Falsework
         symlinks.each {|idx|
           src = idx[0]
           dest = idx[1]
-          puts "L: #{dest} => #{src}" if @verbose
+          CliUtils.veputs 1, "L: #{dest} => #{src}"
           File.symlink(src, dest)
         }
       }
@@ -247,28 +242,37 @@ module Falsework
 
     # Parse a config. Return false on error.
     #
-    # [file] A file to parse.
-    # [rvars] A list of variable names which must be in the config.
-    # [hash] a hash to merge results with
-    def self.config_parse(file, rvars, hash)
-      r = true
-      
+    # [rvars]  A list of variable names which must be in the config.
+    def configParse rvars = []
+      r = false
+
+      file = @dir_t + TEMPLATE_CONFIG
       if File.readable?(file)
         begin
           myconf = YAML.load_file file
           myconf[:file] = file
+          r = true
         rescue
           CliUtils.warnx "cannot parse #{file}: #{$!}"
           return false
         end
         rvars.each { |i|
           CliUtils.warnx "missing or nil '#{i}' in #{file}" if ! myconf.key?(i) || ! myconf[i]
-          r = false
+          return false
         }
-        
-        hash.merge!(myconf) if r && hash
-      else
-        r = false
+
+        if r
+          # # resolve file names
+          # ['obsolete', 'files'].each do |section|
+          #   if myconf['upgrade'] && myconf['upgrade'][section]
+          #     myconf['upgrade'][section].each_with_index {|f, idx|
+          #       myconf['upgrade'][section][idx] = Mould.resolve_filename f, getBinding
+          #     }
+          #   end
+          # end
+          
+          @conf.merge!(myconf)
+        end
       end
       
       r
@@ -365,8 +369,8 @@ module Falsework
       end
     end
 
-    # Resolve @t from possible %%VARIABLE%% scheme.
-    def self.get_filename(t, binding)
+    # Resolve t from possible %%VARIABLE%% scheme.
+    def self.resolve_filename t, binding
       t || (return '')
       
       re = /%%([^%]+)%%/
@@ -393,7 +397,7 @@ module Falsework
 
       file = @project +'/'+ NOTE
       File.open(file, 'w+') {|fp|
-        puts "N: #{File.basename(file)}" if @verbose
+        CliUtils.veputs 1, "N: #{File.basename(file)}"
         fp.puts "# DO NOT DELETE THIS FILE"
         fp.puts "# unless you don't want to upgrade scaffolds in the future."
         fp.puts h.to_yaml
