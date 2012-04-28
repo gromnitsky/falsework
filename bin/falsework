@@ -36,6 +36,8 @@ module Commands
           o.parse!(arg)
         end
       },
+      :code => Proc.new {|arg| upgrade arg},
+      
       'check' => {
         :help => 'Check if project can be upgraded',
         :code => Proc.new {|arg| upgradeCheck arg}
@@ -47,10 +49,6 @@ module Commands
           :help => 'List files that can be deleted',
           :code => Proc.new {|arg| upgradeListObsolete arg }
         }
-      },
-      'obsolete' => {
-        :help => 'Remove obsolete files',
-        :code => Proc.new {|arg| upgradeObsoleteRm arg }
       }
     },
 
@@ -252,13 +250,10 @@ rescue UpgradeError, MouldError
   CliUtils.errx EX_UNAVAILABLE, $!
 end
 
-def upgradeObsoleteRm args
+def upgrade args
   u = Upgrader.new '.'
   u.batch = $conf[:upgrader][:batch]
-    
-  exit EX_UNAVAILABLE unless u.able?
-  exit EX_UNAVAILABLE unless u.obsolete.size > 0
-  u.obsolete_rm
+  u.upgrade $conf[:upgrader][:save]
 rescue UpgradeError, MouldError
   CliUtils.errx EX_UNAVAILABLE, $!
 end

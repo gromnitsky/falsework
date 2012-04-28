@@ -7,12 +7,6 @@ class TestCommandLine < MiniTest::Unit::TestCase
     @cmd = cmd('falsework') # get path to the exe & cd to tests directory
   end
 
-  # very silly analogue of "sed -i'' -E 's/foo/bar/g' file"
-  def sed(file, re, repl)
-    o = File.read(file).gsub(re, repl)
-    File.open(file, 'w+') {|fp| fp.printf(o) }
-  end
-  
   def test_project_ruby_cli
     rm_rf 'templates/foo'
     r = CliUtils.exec "#{@cmd} -v new templates/foo"
@@ -73,19 +67,33 @@ class TestCommandLine < MiniTest::Unit::TestCase
       assert_equal(true, File.exist?('test/test_qqq.rb'))
 
       # upgrade
-      # r = CliUtils.exec "#{@cmd} upgrade -b"
-      # assert_equal(0, r[0])
-      # rm ['test/helper_cliutils.rb']
-      # r = CliUtils.exec "#{@cmd} upgrade -b"
-      # assert_equal(0, r[0])
-      # sed 'test/helper_cliutils.rb',
-      # /^(# Don't.+falsework\/)\d+\.\d+\.\d+(\/.+)$/, '\1999.999.999\2'
-      # r = CliUtils.exec "#{@cmd} upgrade -b"
-      # assert_equal(1, r[0])
-      # assert_match(/file .+ is from .+ falsework: 999.999.999/, r[1])
-      # mv('test', 'ttt')
-      # r = CliUtils.exec "#{@cmd} upgrade -b"
-      # assert_equal(0, r[0])
+      r = CliUtils.exec "#{@cmd} upgrade -b"
+#      pp r
+      assert_equal 0, r[0]
+      rm ['test/helper_cliutils.rb']
+      
+      r = CliUtils.exec "#{@cmd} upgrade -b"
+      assert_equal 0, r[0]
+      
+      File.open('test/helper_cliutils.rb', 'w+') {|fp| fp.puts 'garbage' }
+      r = CliUtils.exec "#{@cmd} upgrade -b --save"
+      assert_equal 0, r[0]
+
+      mv 'test', 'ttt'
+      r = CliUtils.exec "#{@cmd} upgrade -b"
+      assert_equal 0, r[0]
+
+      # upgrade info
+      r = CliUtils.exec "#{@cmd} upgrade check"
+      assert_equal 0, r[0]
+      
+      r = CliUtils.exec "#{@cmd} upgrade list"
+      assert_equal 0, r[0]
+      assert_operator 1, :<=, r[2].split("\n").size
+
+      r = CliUtils.exec "#{@cmd} upgrade list obsolete"
+      assert_equal 0, r[0]
+      assert_operator 1, :<=, r[2].split("\n").size
     }
   end
 

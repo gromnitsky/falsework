@@ -69,7 +69,7 @@ module Falsework
     end
 
     def obsolete
-      @mould.conf['upgrade']['obsolete']
+      @mould.conf['upgrade']['obsolete'] || []
     end
 
     # Return true if user enter 'y' or 'a', false otherwise.
@@ -91,28 +91,25 @@ module Falsework
       false
     end
     
-    def obsolete_rm
-      obsolete.each {|idx|
-        f = Mould.resolve_filename idx, getProjectBinding
-        next unless userSaidYes 'rm', f
-        FileUtils.rm_rf f
-      }
-    end
-
     def upgrade save_old = false # yield f
       fail UpgradeError, "this project cannot be upgraded" unless able?
 
+      at_least_one = false
       files.each {|idx|
         f = Mould.resolve_filename idx, @mould.getBinding
 
         next unless userSaidYes 'update', f
         
-        FileUtils.mv f, f + '.orig' if save_old
+        FileUtils.mv f, f + '.orig' if save_old && File.exist?(f)
         Mould.extract @template_dir + idx, @mould.getBinding, f
 
         # say 'opa-popa was updated'
         yield f if block_given?
+        at_least_one = true
       }
+
+      # update a note file
+      @mould.noteCreate true if at_least_one
     end
     
   end

@@ -344,9 +344,10 @@ module Falsework
         fail MouldError, "bogus template file '#{from}': #{$!}"
       end
 
-      if ! File.exists?(to)
+      unless File.exists?(to)
         # write a skeleton
         begin
+          FileUtils.mkdir_p File.dirname(to)
           File.open(to, 'w+') { |fp| fp.puts output }
           # transfer the exec bit to the generated result
           File.chmod(0744, to) if !defined?(FakeFS) && File.stat(from.to_s).executable?
@@ -355,7 +356,7 @@ module Falsework
         end
       else
         # warn a careless user
-        CliUtils.warnx "'#{to}' already exists" if md5_system != Digest::MD5.file(to).hexdigest
+        CliUtils.warnx "'#{to}' already exists in modified state" if md5_system != Digest::MD5.file(to).hexdigest
       end
     end
 
@@ -374,11 +375,11 @@ module Falsework
 
     # Write a YAML file into a created project directory. This file is
     # required for Upgrader.
-    def noteCreate
+    def noteCreate after_upgrade = false
       h = {
         'project' => {
           'classy' => @classy,
-          'created' => DateTime.now.iso8601
+          'upgraded' => DateTime.now.iso8601
         },
         Meta::NAME => {
           'version' => Meta::VERSION,
@@ -387,6 +388,7 @@ module Falsework
       }
 
       file = @project + '/' + NOTE
+      file = NOTE if after_upgrade # in 'upgrade' mode we are in project dir
       File.open(file, 'w+') {|fp|
         CliUtils.veputs 1, "N: #{File.basename(file)}"
         fp.puts "# DO NOT DELETE THIS FILE"

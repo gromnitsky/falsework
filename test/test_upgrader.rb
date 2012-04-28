@@ -49,17 +49,6 @@ class TestUpgrader < MiniTest::Unit::TestCase
     assert_operator u.obsolete.size, :>=, 1
   end
 
-  def test_obsolete
-    u = Upgrader.new 'example/note', 'full'
-    u.batch = true
-    ClearFakeFS do
-      Dir.mkdir 'test'
-      FileUtils.touch 'test/rake_git.rb'
-      u.obsolete_rm 
-      refute File.readable?('test/rake_git.rb')
-    end
-  end
-
   def test_upgrade_fail
     u = Upgrader.new 'example/note', 'project-too-old'
     e = assert_raises(UpgradeError) { u.upgrade }
@@ -81,7 +70,7 @@ class TestUpgrader < MiniTest::Unit::TestCase
         FileUtils.mkdir_p File.dirname(key)
         File.open(key, 'w+') {|fp| fp.write val}
       }
-      
+
       # make a skeleton
       checksum_old = []
       u.files.each {|idx|
@@ -90,7 +79,7 @@ class TestUpgrader < MiniTest::Unit::TestCase
         FileUtils.touch f
         checksum_old << Digest::MD5.file(f)
       }
-      
+
       u.upgrade true
 
       checksum_new = []
