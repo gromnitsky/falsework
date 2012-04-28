@@ -18,7 +18,7 @@ module Falsework
 
   class Upgrader
     def self.noteLoad file = Mould::NOTE
-      r = YAML.load_file(file) rescue fail($!.to_s)
+      r = YAML.load_file(file) rescue raise
       
       fail 'no project name' unless Utils.all_set?(r['project']['classy'])
       fail "no #{Meta::NAME} version" unless Utils.all_set?(r[Meta::NAME]['version'])
@@ -33,13 +33,13 @@ module Falsework
     end
 
     def initialize dir, note = Mould::NOTE
-      fail UpgradeError, "directory #{dir} is unreadable" unless dir && File.readable?(dir)
+      fail UpgradeError, "directory #{dir} is unreadable" unless File.readable?(dir.to_s)
       @dir = Pathname.new File.realpath(dir)
 
       begin
         @note = Upgrader.noteLoad(@dir + note)
       rescue
-        fail UpgradeError, "operation isn't possible: #{$!}"
+        raise UpgradeError, $!
       end
 
       @mould = Mould.new File.basename(@dir), @note[Meta::NAME]['template']

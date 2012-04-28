@@ -225,12 +225,9 @@ end
 
 def upgradeCheck args
   u = Upgrader.new '.'
-  if u.able?
-    CliUtils.veputs 1, "Yup, it's possible."
-  else
-    CliUtils.errx EX_UNAVAILABLE, "this project cannot be upgraded, sorry"
-  end
-rescue UpgradeError
+  CliUtils.errx EX_UNAVAILABLE, "project '#{u.project}' cannot be upgraded" unless u.able?
+  CliUtils.veputs 1, "Yup, it's possible."
+rescue UpgradeError, MouldError
   CliUtils.errx EX_UNAVAILABLE, $!
 end
 
@@ -240,7 +237,7 @@ def upgradeListFiles args
   u.files.each {|i|
     puts Mould.resolve_filename i, u.getProjectBinding
   }
-rescue UpgradeError
+rescue UpgradeError, MouldError
   CliUtils.errx EX_UNAVAILABLE, $!
 end
 
@@ -251,7 +248,7 @@ def upgradeListObsolete args
   u.obsolete.each {|i|
     puts Mould.resolve_filename i, u.getProjectBinding
   }
-rescue UpgradeError
+rescue UpgradeError, MouldError
   CliUtils.errx EX_UNAVAILABLE, $!
 end
 
@@ -262,7 +259,7 @@ def upgradeObsoleteRm args
   exit EX_UNAVAILABLE unless u.able?
   exit EX_UNAVAILABLE unless u.obsolete.size > 0
   u.obsolete_rm
-rescue UpgradeError
+rescue UpgradeError, MouldError
   CliUtils.errx EX_UNAVAILABLE, $!
 end
 

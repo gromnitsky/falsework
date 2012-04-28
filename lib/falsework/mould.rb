@@ -77,7 +77,7 @@ module Falsework
     # [gecos] A full author name from ~/.gitconfig.
     def initialize(project, template, user = nil, email = nil, gecos = nil)
       @project = Mould.name_project project
-      raise MouldError, "invalid project name '#{project}'" unless Mould.name_valid?(@project)
+      fail MouldError, "invalid project name '#{project}'" unless Mould.name_valid?(@project)
       @camelcase = Mould.name_camelcase project
       @classy = Mould.name_classy project
       
@@ -214,16 +214,16 @@ module Falsework
 
           if File.symlink?(idx)
             # we'll process them later on
-            is_dir = File.directory?(@dir_t + '/' + File.readlink(idx))
-            symlinks << [Mould.resolve_filename(File.readlink(idx), binding),
-                         Mould.resolve_filename(file, binding)]
+#            is_dir = File.directory?(@dir_t + '/' + File.readlink(idx))
+            symlinks << [Mould.resolve_filename(File.readlink(idx), getBinding),
+                         Mould.resolve_filename(file, getBinding)]
           elsif File.directory?(idx)
             CliUtils.veputs 1, "D: #{file}"
-            Dir.mkdir Mould.resolve_filename(file, binding)
+            Dir.mkdir Mould.resolve_filename(file, getBinding)
           else
             CliUtils.veputs 1, "N: #{file}"
-            to = Mould.resolve_filename(file, binding)
-            Mould.extract(idx, binding, to)
+            to = Mould.resolve_filename file, getBinding
+            Mould.extract idx, binding, to # 'binding' to include local uuid
           end
           r = true
         }
@@ -233,7 +233,7 @@ module Falsework
           src = idx[0]
           dest = idx[1]
           CliUtils.veputs 1, "L: #{dest} => #{src}"
-          File.symlink(src, dest)
+          File.symlink src, dest
         }
       }
       
@@ -261,18 +261,7 @@ module Falsework
           return false
         }
 
-        if r
-          # # resolve file names
-          # ['obsolete', 'files'].each do |section|
-          #   if myconf['upgrade'] && myconf['upgrade'][section]
-          #     myconf['upgrade'][section].each_with_index {|f, idx|
-          #       myconf['upgrade'][section][idx] = Mould.resolve_filename f, getBinding
-          #     }
-          #   end
-          # end
-          
-          @conf.merge!(myconf)
-        end
+        @conf.merge!(myconf) if r
       end
       
       r
@@ -310,6 +299,7 @@ module Falsework
         to = idx['dest'] % target
 
         begin
+          # 'binding' to include local vars
           Mould.extract @dir_t + idx['src'], binding, to
           File.chmod(idx['mode_int'], to) if idx['mode_int']
         rescue
@@ -343,12 +333,12 @@ module Falsework
     
     # Extract file @from into @to.
     #
-    # [binding] A binding for eval.
-    def self.extract from, binding, to
+    # [bng] A binding for eval.
+    def self.extract from, bng, to
       t = ERB.new File.read(from.to_s)
       t.filename = from.to_s # to report errors relative to this file
       begin
-        output = t.result(binding)
+        output = t.result bng
         md5_system = Digest::MD5.hexdigest(output)
       rescue Exception
         fail MouldError, "bogus template file '#{from}': #{$!}"
@@ -370,11 +360,11 @@ module Falsework
     end
 
     # Resolve t from possible %%VARIABLE%% scheme.
-    def self.resolve_filename t, binding
+    def self.resolve_filename t, bng
       t || (return '')
       
       re = /%%([^%]+)%%/
-      t = ERB.new(t.gsub(re, '<%= \+ %>')).result(binding) if t =~ re
+      t = ERB.new(t.gsub(re, '<%= \+ %>')).result(bng) if t =~ re
       t.sub(/\.#erb$/, '')
     end
 
@@ -382,7 +372,8 @@ module Falsework
       binding
     end
 
-
+    # Write a YAML file into a created project directory. This file is
+    # required for Upgrader.
     def noteCreate
       h = {
         'project' => {
@@ -395,7 +386,7 @@ module Falsework
         }
       }
 
-      file = @project +'/'+ NOTE
+      file = @project + '/' + NOTE
       File.open(file, 'w+') {|fp|
         CliUtils.veputs 1, "N: #{File.basename(file)}"
         fp.puts "# DO NOT DELETE THIS FILE"
