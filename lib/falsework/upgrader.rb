@@ -19,14 +19,18 @@ module Falsework
   class Upgrader
     def self.noteLoad file = Mould::NOTE
       r = YAML.load_file(file) rescue raise
+
+      ['project', 'template'].each {|idx|
+        fail "no #{idx} spec" unless r[idx]
+      }
       
       fail 'no project name' unless Utils.all_set?(r['project']['classy'])
-      fail "no #{Meta::NAME} version" unless Utils.all_set?(r[Meta::NAME]['version'])
-      r[Meta::NAME]['version'] = Gem::Version.new r[Meta::NAME]['version']
-      fail "no #{Meta::NAME} template" unless Utils.all_set?(r[Meta::NAME]['template'])
+      fail "no template version" unless Utils.all_set?(r['template']['version'])
+      r['template']['version'] = Gem::Version.new r['template']['version']
+      fail "no template name" unless Utils.all_set?(r['template']['name'])
 
-      unless Mould.templates[r[Meta::NAME]['template']]
-        fail "unknown template '#{r[Meta::NAME]['template']}'"
+      unless Mould.templates[r['template']['name']]
+        fail "unknown template '#{r['template']['name']}'"
       end
 
       r
@@ -42,8 +46,8 @@ module Falsework
         raise UpgradeError, $!
       end
 
-      @mould = Mould.new File.basename(@dir), @note[Meta::NAME]['template']
-      @template_dir = Pathname.new(Mould.templates[@note[Meta::NAME]['template']])
+      @mould = Mould.new @note['project']['classy'], @note['template']['name']
+      @template_dir = Mould.templates[@note['template']['name']]
       @project = @mould.project
 
       @batch = false
@@ -59,7 +63,7 @@ module Falsework
 
     def able?
       return false unless @mould.conf['upgrade']
-      return false if Gem::Version.new(@mould.conf['upgrade']['from']) > @note[Meta::NAME]['version']
+      return false if Gem::Version.new(@mould.conf['upgrade']['from']) > @note['template']['version']
       return false unless @mould.conf['upgrade']['files'].is_a?(Array) && @mould.conf['upgrade']['files'].size > 0
       true
     end

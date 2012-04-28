@@ -1,3 +1,0 @@
-templates/ruby-cli/lib/%%@project%%/cliconfig.rb
-templates/ruby-cli/lib/%%@project%%/cliutils.rb
-templates/ruby-cli/test/helper_cliutils.rb

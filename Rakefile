@@ -2,31 +2,39 @@
 
 require 'rake/clean'
 require 'rake/testtask'
-require 'bundler/gem_tasks'
 gem 'rdoc'
 require 'rdoc/task'
 
-# Generate dynamic targets
-require_relative 'test/rake_erb_templates'
+require 'yaml'
+require_relative 'lib/falsework/mould'
 
-ERB_DYN_SKELETON = erb_skeletons 'ruby-cli'
-ERB_DYN_SKELETON.each {|k, v|
-  file k => [v] do |t|
-    erb_make 'ruby-cli', t.name, t.prerequisites[0]
-  end
-}
+def src2template target, prerequisite
+  src = File.read prerequisite
+  src.gsub! /#{Meta::NAME}/, '<%= @project %>'
+  src.gsub! /#{Mould.name_camelcase(Meta::NAME)}/, '<%= @camelcase %>'
 
-desc "Generate ruby-cli dynamic files"
-file 'dynamic.ruby-cli' => ERB_DYN_SKELETON.keys do |t|
-  File.open(t.name, 'w+') {|fp|
-    ERB_DYN_SKELETON.keys.map {|i|
-      fp.puts i.sub(/#{Dir.pwd}\//, '')
-    }
+  File.open(target, 'w+') {|fp| fp.puts src }
+  puts "Created: #{target}"
+end
+
+# Create a dynamic target list
+def dynTargets
+  YAML.load_file 'dynamic.yaml'
+end
+
+DYNAMICS = dynTargets
+
+desc "Generate some dynamic template files"
+task :dynamic do
+  DYNAMICS.each {|key, val|
+    src2template key, val
   }
 end
 
 # add rubi-cli dynamic files to a clobber target
-CLOBBER.concat ERB_DYN_SKELETON.keys
+CLOBBER.concat DYNAMICS.keys
+
+require 'bundler/gem_tasks'
 
 task default: [:test]
 
@@ -40,5 +48,5 @@ Rake::TestTask.new do |i|
   i.test_files = FileList['test/test_*.rb']
 end
 
-task test: ['dynamic.ruby-cli']
-task build: ['dynamic.ruby-cli']
+task test: [:dynamic]
+task build: [:dynamic]

@@ -10,7 +10,7 @@ Gem::Specification.new do |gem|
   gem.homepage      = Meta::HOMEPAGE
 
   gem.files         = `git ls-files`.split($\)
-  gem.files.concat File.read('dynamic.ruby-cli').split("\n")
+  gem.files.concat YAML.load_file('dynamic.yaml').keys
   
   gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
   gem.test_files    = gem.files.grep(%r{^test/test_.+\.rb})

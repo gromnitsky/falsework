@@ -52,6 +52,10 @@ class TestCommandLine < MiniTest::Unit::TestCase
       # check rake
       r = CliUtils.exec "rake -T"
       assert_equal 0, r[0]
+
+      # bundler targets test
+      r = CliUtils.exec "rake build"
+      assert_equal 0, r[0]
       
       # add files
       r = CliUtils.exec "#{@cmd} exe qqq"

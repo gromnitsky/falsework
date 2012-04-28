@@ -1,5 +1,3 @@
-# :erb: ruby-cli
-
 require 'pp'
 require 'open4'
 require 'pathname'

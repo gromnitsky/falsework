@@ -1,0 +1,4 @@
+---
+templates/ruby-cli/lib/%%@project%%/cliconfig.rb: lib/falsework/cliconfig.rb
+templates/ruby-cli/lib/%%@project%%/cliutils.rb: lib/falsework/cliutils.rb
+templates/ruby-cli/test/helper_cliutils.rb: test/helper_cliutils.rb

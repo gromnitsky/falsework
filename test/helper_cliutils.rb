@@ -1,4 +1,3 @@
-# :erb: ruby-cli
 # Various staff for minitest. Include this file into your 'helper.rb'.
 
 require 'fileutils'

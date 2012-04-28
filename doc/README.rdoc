@@ -17,21 +17,23 @@ Initially the template spec was designed only for Ruby projects but
 later (from version 1.3.0) hard-coded Ruby staff was removed which added
 more flexibility.
 
-The generated project <b>is not dependent</b> on falsework. The utility
-can also add skeletons for tests end executables <i>after</i> the
+Generated projects <b>are not dependent</b> on falsework. The utility
+can also add skeletons for tests end executables <b>after</b> the
 project generation.
 
 
 ==Ruby Template
 
-... is default. It generates a scaffold which have:
+... is default. It generates a scaffold which has:
 
 * auto-created git (but not github) project;
 
-* <tt>gem</tt> (a file list is pulled from the git repository, <b>no more
-  missing files in gems!</b>), <tt>doc</tt>, <tt>test</tt> targets;
+* <tt>gemspec</tt> (a file list is pulled from the git repository),
+  <tt>doc</tt>, <tt>test</tt> targets; +build+, +install+ & +release+
+  bundler targets.
 
-* easy to use configuration parser/loader. This includes scanning for:
+* easy to use configuration parser/loader. This includes auto-scanning
+  for:
 
   * env variable(s);
   * the flat YAML configuration file;
@@ -45,83 +47,41 @@ Version & name of your project can be located at generated
 
 ==Options
 
-The commands:
+Run
 
-list::                      Do nothing except listing all available
-                            templates. You can add your own templates in
-                            <tt>~/.falsework/templates</tt> directory.
+ $ falsework -h
 
-listdirs::                  Do nothing except listing all available
-                            templates directories. You can add another
-                            directory by modifying <tt>tdir</tt> option
-                            in the config file. (<tt>tdir</tt> is an
-                            array).
-                            
-new NAME::                  Create a new project. It creates a directory
-                            <i>NAME</i> and populates it with files.
+to read all possible commands & global options. All of them, except
++new+ & +list+, work from the root project directory.
 
-The following commands works only from the root project directory:
+Some of the commands support <tt>-h</tt> option too, for example:
 
-exe NAME::                  Add a new executable to an existing
-                            project and a corresponding doc in
-                            <tt>doc</tt> sub-directory.
-
-doc NAME::                  Add a new doc file in
-                            <tt>doc</tt> sub-directory.
-                            
-test NAME::                 Add a new test in
-                            <tt>test</tt> sub-directory.
-
-upgrade::                   'Inject' or upgrade some vital files from the
-                            template into the project. Currently only
-                            'ruby-cli' template supports this.
-
-The options are as follows:
-
--t::                        A template name.
-
--b::                        A batch mode. (No questions asked.)
-
---no-git::                  Don't create a Git repository. Don't use
-                            this for 'ruby-cli' template.
-
---config-dirs::             List all possible locations for the
-                            configuration file. The first found wins.
-
---config NAME::             The name of the configuration file. If
-                            it contains <tt>/</tt> in it, the list from
-                            <tt>--config-dirs</tt> is ignored.
-
--V::                        Show falsework version and exit.
-
--v::                        Be more verbose. You can supply it several
-                            times, viz. <tt>-vv</tt> dumps even more
-                            debug info.
+ $ falsework upgrade -h
 
 
 ==Examples
 
 Create a new project:
 
- % falsework -v new foobar
+ $ falsework -v new foobar
 
 Add another CL util to the existing project:
 
- % pwd
+ $ pwd
  .../foobar
- % falsework exe foo
+ $ falsework exe foo
 
 (It will appear in <tt>bin/</tt> sub-directory.)
 
 Add another test file:
 
- % falsework test foo
+ $ falsework test foo
 
 (It will appear in <tt>test/</tt> sub-directory.)
 
 Create a project from another template:
 
- % falsework -t c-glib -v new foo-bar
+ $ falsework -t c-glib -v new foo-bar
 
 
 ==Bugs

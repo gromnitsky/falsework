@@ -10,6 +10,26 @@ module Commands
   extend self
 
   FORMAT = {
+    'new' => {
+      :help => 'Create a new project',
+      :arg => true,
+      :code => Proc.new {|arg| newProject arg },
+      :optionparse => Proc.new {|arg|
+        OptionParser.new do |o|
+          o.banner = "Usage: #{File.basename($0)} [options] new [options] NAME"
+          o.separator ""
+
+          o.on('--no-git', "Don't create a git repo.",
+               "(Will break 'ruby-cli'.)") { $conf[:git] = false }
+          o.on('--no-note', "Don't create a note file.") {
+            $conf[:note] = false
+          }
+          
+          o.parse!(arg)
+        end
+      }
+    },
+    
     'list' => {
       :help => 'List all available templates',
       :code => Proc.new {|arg| list arg},
@@ -52,25 +72,6 @@ module Commands
       }
     },
 
-    'new' => {
-      :help => 'Create a new project',
-      :arg => true,
-      :code => Proc.new {|arg| newProject arg },
-      :optionparse => Proc.new {|arg|
-        OptionParser.new do |o|
-          o.banner = "Usage: #{File.basename($0)} [options] new [options] NAME"
-          o.separator ""
-
-          o.on('--no-git', "Don't create a git repo.",
-               "(Will break 'ruby-cli'.)") { $conf[:git] = false }
-          o.on('--no-note', "Don't create a note file.") {
-            $conf[:note] = false
-          }
-          
-          o.parse!(arg)
-        end
-      }
-    },
     'exe' => {
       :help => 'Add a new executable to an existing project',
       :arg => true,
@@ -161,7 +162,7 @@ end
 
 def list args
   Mould.templates.each {|name, loc|
-    loc = '(system)' if loc == (Mould.template_dirs.first + name).to_s
+    loc = '(system)' if loc == (Mould.template_dirs.first + name)
     puts "%-30s %s" % [name, loc]
   }
 end
@@ -226,7 +227,7 @@ def upgradeCheck args
   CliUtils.errx EX_UNAVAILABLE, "project '#{u.project}' cannot be upgraded" unless u.able?
   CliUtils.veputs 1, "Yup, it's possible."
 rescue UpgradeError, MouldError
-  CliUtils.errx EX_UNAVAILABLE, $!
+  CliUtils.errx 1, $!
 end
 
 def upgradeListFiles args
@@ -236,7 +237,7 @@ def upgradeListFiles args
     puts Mould.resolve_filename i, u.getProjectBinding
   }
 rescue UpgradeError, MouldError
-  CliUtils.errx EX_UNAVAILABLE, $!
+  CliUtils.errx 1, $!
 end
 
 def upgradeListObsolete args
@@ -247,7 +248,7 @@ def upgradeListObsolete args
     puts Mould.resolve_filename i, u.getProjectBinding
   }
 rescue UpgradeError, MouldError
-  CliUtils.errx EX_UNAVAILABLE, $!
+  CliUtils.errx 1, $!
 end
 
 def upgrade args
@@ -255,7 +256,7 @@ def upgrade args
   u.batch = $conf[:upgrader][:batch]
   u.upgrade $conf[:upgrader][:save]
 rescue UpgradeError, MouldError
-  CliUtils.errx EX_UNAVAILABLE, $!
+  CliUtils.errx 1, $!
 end
 
 

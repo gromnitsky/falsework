@@ -1,5 +1,3 @@
-# :erb: ruby-cli
-
 require 'pathname'
 require 'yaml'
 require 'optparse'

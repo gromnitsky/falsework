@@ -3,6 +3,6 @@ project:
   classy: Foo Bar Pro
   created: 2012-04-26T14:32:36+03:00
 
-falsework:
+template:
   version: 2.1.1
-  template: practical-english-usage
+  name: practical-english-usage

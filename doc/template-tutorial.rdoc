@@ -111,3 +111,35 @@ dest::      Sub-key can have <tt>%s</tt> in it which will be replaced with
             target value ('foobar' in the example above).
 
 mode_int::  Permission bits.
+
+Top level keys must be one of: +exe+, +doc+, +test+ or +file+
+strings. Each of these string corresponds to a hard-coded command in
++falsework+ executable.
+
+
+== Upgrade command
+
+Any template may have instructions for updating files in old
+projects. To make your template 'upgradable', add to
+<tt>#config.yaml</tt> file:
+
+ version: 2.3.4
+ upgrade:
+   obsolete:
+	 - some/file
+   files:
+	 - foo
+	 - bar/baz
+   from: 1.2.3
+
+where
+
+version::  Sets a current version of the template. Required.
+
+obsolete:: Means a list of files that user may delete. Optional.
+
+files::    A list of 'upgradable' files. It must be relative to the
+           template directory. Required.
+
+from::     A minimal template version number from which it is possible to
+           perform an upgrade. Required.

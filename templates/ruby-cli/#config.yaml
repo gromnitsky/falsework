@@ -14,6 +14,8 @@ test:
   dest: 'test/test_%s.rb'
   mode_int: null
 
+version: 3.0.0
+
 upgrade:
   obsolete:
     - test/rake_git.rb

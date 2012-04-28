@@ -251,6 +251,7 @@ module Falsework
         begin
           myconf = YAML.load_file file
           myconf[:file] = file
+          myconf['version'] = '1.0.0' unless myconf['version']
           r = true
         rescue
           CliUtils.warnx "cannot parse #{file}: #{$!}"
@@ -290,7 +291,7 @@ module Falsework
       
       created = []
 
-      unless @conf[mode][0]['src']
+      unless @conf[mode] && @conf[mode][0]['src']
         CliUtils.warnx "hash '#{mode}' is empty in #{@conf[:file]}"
         return []
       end
@@ -381,9 +382,9 @@ module Falsework
           'classy' => @classy,
           'upgraded' => DateTime.now.iso8601
         },
-        Meta::NAME => {
-          'version' => Meta::VERSION,
-          'template' => @template
+        'template' => {
+          'version' => @conf['version'],
+          'name' => @template
         }
       }
 
