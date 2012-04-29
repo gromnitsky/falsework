@@ -20,6 +20,13 @@ Gem::Specification.new do |gem|
   gem.required_ruby_version = '>= 1.9.2'
   gem.extra_rdoc_files      = gem.files.grep(%r{^doc/})
   gem.rdoc_options << '-m' << 'doc/README.rdoc' << '-x' << 'lib/.+/templates/'
+
+  gem.post_install_message  = <<-MESSAGE
+Users of 2.x! Your custom templates must be updated--format
+of #config.yaml has changed.
+
+See also doc/NEWS.rdoc file even if you don't have custom templates.
+  MESSAGE
   
   gem.add_dependency "open4", "~> 1.3.0"
   gem.add_dependency "rdoc", "~> 3.12"

@@ -1,3 +1,4 @@
+# :include: ../../README.rdoc
 module Falsework
   module Meta # :nodoc:
     NAME = 'falsework'

@@ -1,10 +1,26 @@
 === 3.0.0
 
-Thu Apr 26 09:38:44 EEST 2012
+Sun Apr 29 12:22:27 EEST 2012
 
-* Moved system templates 2 directories lower.
+* *INCOMPATIBILITY:* symbols in template's <tt>#config.yaml</tt> are
+  strings.
 
-* Symbols in template's #config.yaml is strings.
+* *INCOMPATIBILITY:* 'listdirs' is 'list dirs' now.
+
+* *INCOMPATIBILITY:* <tt>:tdir</tt> symbol in falsework.yaml is a string 'tdir'.
+
+* *INCOMPATIBILITY:* CLO are parsed from left to right only & some
+  options are command-specific, for example, 'falsework new foo -v -t
+  c-glib' won't work, because 'new' command doesn't know '-v' and '-t'
+  options (they are global).
+
+* New command: file.
+
+* 'upgrade' command has subcommands: list, list obsolete, check.
+
+* Upgrading procedure injects a special 'note' into projects:
+  <tt>.falsework</tt> file. Upgraded files are no longer contain
+  embedded marks in them.
 
 === 2.1.0
 
