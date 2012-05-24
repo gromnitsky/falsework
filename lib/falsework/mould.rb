@@ -101,7 +101,8 @@ module Falsework
                      'src' => nil,
                      'dir' => 'test/test_%s.rb',
                      'mode_int' => nil
-                   }]
+                   }],
+        'version' => '1.0.0'
       }
       configParse
       
@@ -251,7 +252,6 @@ module Falsework
         begin
           myconf = YAML.load_file file
           myconf[:file] = file
-          myconf['version'] = '1.0.0' unless myconf['version']
           r = true
         rescue
           CliUtils.warnx "cannot parse #{file}: #{$!}"
@@ -292,7 +292,11 @@ module Falsework
       created = []
 
       unless @conf[mode] && @conf[mode][0]['src']
-        CliUtils.warnx "hash '#{mode}' is empty in #{@conf[:file]}"
+        if @conf[:file]
+          CliUtils.warnx "hash '#{mode}' is empty in #{@conf[:file]}"
+        else
+          CliUtils.warnx "template '#{@template}' doesn't have '#{TEMPLATE_CONFIG}' file"
+        end
         return []
       end
 

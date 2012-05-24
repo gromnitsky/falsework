@@ -1,3 +1,15 @@
+=== 3.1.0
+
+Thu May 24 23:20:04 EEST 2012
+
+* Fix a long standing issue with redundant '-t' CLO after a project was
+  generated.
+
+* Fix empty value of template version in .falsework file.
+
+* Tell user if she doesn't have '#config.yaml' file in her template if
+  she is trying to add files to a project afterwards.
+
 === 3.0.0
 
 Sun Apr 29 12:22:27 EEST 2012

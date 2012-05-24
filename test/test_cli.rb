@@ -113,7 +113,7 @@ class TestCommandLine < MiniTest::Unit::TestCase
     assert_equal(0, r[0])
 
     Dir.chdir('templates/c_glib') {
-      r = CliUtils.exec "#{@cmd} -t c-glib exe q-q-q"
+      r = CliUtils.exec "#{@cmd} exe q-q-q"
       assert_equal(0, r[0])
       assert_equal(true, File.exist?('src/q_q_q.h'))
       assert_equal(true, File.exist?('src/q_q_q.c'))

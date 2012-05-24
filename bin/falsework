@@ -207,8 +207,12 @@ def addFiles mode, files
   CliUtils.errx EX_USAGE, 'missing argument(s)' if files.size == 0
   
   r = true
-  m = Mould.new(File.basename(Dir.pwd), $conf[:template],
-                $conf[:user], $conf[:email], $conf[:gecos])
+  begin
+    m = Mould.new(File.basename(Dir.pwd), $conf[:template],
+                  $conf[:user], $conf[:email], $conf[:gecos])
+  rescue
+    CliUtils.errx EX_SOFTWARE, $!
+  end
   
   files.each {|i|
     created = m.add(mode, i) rescue CliUtils.errx(1, $!)
@@ -282,6 +286,9 @@ $conf[:note] = true
 $conf[:upgrader] = {}
 $conf[:upgrader][:batch] = false
 $conf[:upgrader][:save] = false
+
+# try to load a note file to set current template
+$conf[:template] = Upgrader.noteLoad['template']['name'] rescue nil
 
 $conf.load {|o|
   o.on('--user STR', 'Github user.') {|i| $conf[:user] = i }

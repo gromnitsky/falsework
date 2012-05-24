@@ -17,7 +17,15 @@ class TestMould < MiniTest::Unit::TestCase
       # no template config file
       m = Mould.new 'foo', nil
       refute m.conf[:upgrade]
+      assert_equal '1.0.0', m.conf['version']
 
+      # config with just a version
+      File.open('t/ruby-cli/'+Mould::TEMPLATE_CONFIG, 'w+') {|fp|
+        fp.puts Hash['version' => '3.2.1'].to_yaml
+      }
+      m = Mould.new 'foo', nil
+      assert_equal '3.2.1', m.conf['version']
+      
       # invalid template config file
       File.open('t/ruby-cli/'+Mould::TEMPLATE_CONFIG, 'w+') {|fp|
         fp.puts 'garbage'
@@ -30,6 +38,19 @@ class TestMould < MiniTest::Unit::TestCase
 
     m = Mould.new 'foo', nil
     assert_equal 'lib/%%@project%%/cliconfig.rb', m.conf['upgrade']['files'].first
+  end
+
+  def test_invalidAdd
+    ClearFakeFS do
+      FileUtils.mkdir_p 't/ruby-cli'
+      Mould.template_dirs.unshift Pathname.new('t')
+
+      m = Mould.new 'foo', nil
+      out, err = capture_io { m.add 'doc', 'breaking-news' }
+      assert_match /template .+ doesn\'t have .+ file/, err
+      
+      Mould.template_dirs.shift
+    end
   end
 
   def test_name_project
