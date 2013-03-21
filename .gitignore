@@ -1,2 +1,6 @@
 pkg
 html
+Gemfile.lock
+vendor
+.bundle
+.ph

@@ -19,8 +19,8 @@ Gem::Specification.new do |gem|
   gem.required_ruby_version = '>= 1.9.2'
   gem.extra_rdoc_files      = gem.files.grep(%r{^doc/})
   gem.rdoc_options << '-m' << 'doc/README.rdoc'
-  
+
   gem.add_dependency "open4", "~> 1.3.0"
-  gem.add_dependency "rdoc", "~> 3.12"
-  gem.add_dependency "bundler", "~> 1.1.3"
+  gem.add_dependency "rdoc", "~> 4.0.0"
+  gem.add_dependency "bundler", ">= 1.3"
 end

@@ -51,12 +51,13 @@ class TestCommandLine < MiniTest::Unit::TestCase
     Dir.chdir('templates/foo') {
       # check rake
       r = CliUtils.exec "rake -T"
+#      pp r
       assert_equal 0, r[0]
 
       # bundler targets test
       r = CliUtils.exec "rake build"
       assert_equal 0, r[0]
-      
+
       # add files
       r = CliUtils.exec "#{@cmd} exe qqq"
       assert_equal(0, r[0])
@@ -75,10 +76,10 @@ class TestCommandLine < MiniTest::Unit::TestCase
 #      pp r
       assert_equal 0, r[0]
       rm ['test/helper_cliutils.rb']
-      
+
       r = CliUtils.exec "#{@cmd} upgrade -b"
       assert_equal 0, r[0]
-      
+
       File.open('test/helper_cliutils.rb', 'w+') {|fp| fp.puts 'garbage' }
       r = CliUtils.exec "#{@cmd} upgrade -b --save"
       assert_equal 0, r[0]
@@ -90,7 +91,7 @@ class TestCommandLine < MiniTest::Unit::TestCase
       # upgrade info
       r = CliUtils.exec "#{@cmd} upgrade check"
       assert_equal 0, r[0]
-      
+
       r = CliUtils.exec "#{@cmd} upgrade list"
       assert_equal 0, r[0]
       assert_operator 1, :<=, r[2].split("\n").size
@@ -121,7 +122,7 @@ class TestCommandLine < MiniTest::Unit::TestCase
       r = CliUtils.exec "#{@cmd} -t c-glib test q-q-q"
       assert_equal(0, r[0])
       assert_equal(true, File.exist?('test/test_q_q_q.c'))
-      
+
       Dir.chdir('src') {
         r = CliUtils.exec "gmake"
         assert_equal 0, r[0]
@@ -144,7 +145,7 @@ class TestCommandLine < MiniTest::Unit::TestCase
     r = CliUtils.exec "#{@cmd} --config /NO_SUCH_FILE.yaml list dirs"
     assert_equal(0, r[0])
     assert_equal(2, r[2].split("\n").size)
-    
+
     r = CliUtils.exec "#{@cmd} --config templates/config-01.yaml list dirs"
     assert_equal(0, r[0])
     assert_equal(3, r[2].split("\n").size)

@@ -2,6 +2,8 @@
 require File.expand_path('../lib/falsework/meta', __FILE__)
 include Falsework
 
+require 'yaml'
+
 Gem::Specification.new do |gem|
   gem.authors       = [Meta::AUTHOR]
   gem.email         = [Meta::EMAIL]
@@ -11,7 +13,7 @@ Gem::Specification.new do |gem|
 
   gem.files         = `git ls-files`.split($\)
   gem.files.concat YAML.load_file('dynamic.yaml').keys
-  
+
   gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
   gem.test_files    = gem.files.grep(%r{^test/test_.+\.rb})
   gem.name          = Meta::NAME
@@ -27,10 +29,10 @@ of #config.yaml has changed.
 
 See also doc/NEWS.rdoc file even if you don't have custom templates.
   MESSAGE
-  
+
   gem.add_dependency "open4", "~> 1.3.0"
-  gem.add_dependency "rdoc", "~> 3.12"
-  gem.add_dependency "bundler", "~> 1.1.3"
+  gem.add_dependency "rdoc", "~> 4.0.0"
+  gem.add_dependency "bundler", ">= 1.3"
   gem.add_dependency "git", "~>1.2.5"
 
   gem.add_development_dependency "fakefs", "~> 0.4.0"
