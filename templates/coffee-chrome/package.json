@@ -1,0 +1,21 @@
+{
+	"files": [
+		"lib/background.js",
+		"manifest.json"
+	],
+	"name": "<%= @project %>",
+	"version": "0.0.1",
+	"license": {
+		"type": "MIT",
+		"url": "http://www.opensource.org/licenses/mit-license.php"
+	},
+	"repository": {
+		"type": "git",
+		"url": "http://github.com/<%= @user %>/<%= @project %>"
+	},
+	"dependencies": {
+		"coffee-script": "~1.6.2",
+		"browserify": "~2.6.0",
+		"mocha": "~1.8.2"
+	}
+}

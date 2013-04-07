@@ -1,0 +1,5 @@
+---
+test:
+- src: 'test/foo.coffee'
+  dest: 'test/%s.coffee'
+  mode_int: null
