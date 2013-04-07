@@ -84,7 +84,7 @@ When user types
 
 falsework looks info <tt>#config.yaml</tt> file in the <tt>c-glib</tt>
 template directory, searches for 'test' key and iterates on its value to
-read some file in the template directory, white that file somewhere and
+read some file in the template directory, write that file somewhere and
 set it permission afterwards.
 
 The default configuration is:
@@ -112,8 +112,8 @@ src::       A relative path to a file (that usually prefixed with
             '#' & hidden from a generator). When +src+ is +null+, the
             key is ignored and nothing is injected.
 
-dest::      Sub-key can have <tt>%s</tt> in it which will be replaced with
-            target value ('foobar' in the example above).
+dest::      A sub-key can have <tt>%s</tt> in it which will be replaced with
+            a target value ('foobar' in the example above).
 
 mode_int::  Permission bits.
 
