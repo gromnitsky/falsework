@@ -24,7 +24,7 @@ test_my_strstrip()
 	GString *s = g_string_new("");
 
 	g_assert(!my_strstrip(NULL));
-	
+
 	char *t1[] = { "q", "\t  q\t", "\t\n\n  q\t\n\r", NULL };
 	char **p;
 	for (p = t1; *p; ++p) {
@@ -45,7 +45,7 @@ test_my_strstrip()
 	g_string_assign(s, "This is\na text & only text.");
 	my_strstrip(s);
 	g_assert_cmpstr("This is a text & only text.", ==, s->str);
-		
+
 	g_string_free(s, TRUE);
 }
 
@@ -79,15 +79,15 @@ test_chan_read()
 		{ "./mycat < semis/text/empty.txt", 0, "d41d8cd98f00b204e9800998ecf8427e" },
 		{ "./mycat < Makefile.test.mk", 2753, "f25fbc27b05cf7a33b6d01eb5a0bedb9" },
 		// delete this line if you don't have wordnet installed
-		{ "./mycat < /usr/local/share/WordNet/data.noun", 15300280, "a51f8a16db5be01db3ae95367469c6c7" },
+//		{ "./mycat < /usr/share/wordnet-3.0/dict/data.noun", 15300280, "a51f8a16db5be01db3ae95367469c6c7" },
 		{ NULL, -1, NULL }
 	};
-	
+
 	struct Cmd *p;
 	for (p = cmd; p->c; ++p) {
 		FILE* f = popen(p->c, "r");
 		g_assert(f);
-			
+
 		char buf[p->bytes];
 		gsize bytes = readn(fileno(f), buf, p->bytes);
 		pclose(f);
@@ -129,6 +129,6 @@ main (int argc, char **argv)
 	g_test_add_func("/utils/first", test_first);
 	g_test_add_func("/utils/chan_read", test_chan_read);
 	g_test_add_func("/utils/mylog_set", test_mylog_set);
-	
+
 	return g_test_run();
 }
