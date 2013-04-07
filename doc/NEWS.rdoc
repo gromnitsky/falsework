@@ -1,3 +1,13 @@
+=== 3.2.0
+
+Sun Apr  7 22:06:50 EEST 2013
+
+* Add coffee-chrome template.
+
+* Update deps version numbers.
+
+* Ruby is not cool anymore. It's time to move on.
+
 === 3.1.0
 
 Thu May 24 23:20:04 EEST 2012
@@ -71,11 +81,11 @@ Mon Nov  7 07:15:00 EET 2011
     # Don't remove this: falsework/0.2.8/naive/2011-08-05T16:59:19+03:00
 
   and replace it to:
-  
+
     # Don't remove this: falsework/0.2.8/ruby-naive/2011-08-05T16:59:19+03:00
 
   Then run 'falsework upgrade' as usual.
-	
+
 * Added 'c-glib' template.
 
 * '--no-git' CLO.
