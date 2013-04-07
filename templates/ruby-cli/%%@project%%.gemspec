@@ -21,6 +21,6 @@ Gem::Specification.new do |gem|
   gem.rdoc_options << '-m' << 'doc/README.rdoc'
 
   gem.add_dependency "open4", "~> 1.3.0"
-  gem.add_dependency "rdoc", "~> 4.0.0"
+  gem.add_dependency "rdoc", "~> 4.0.1"
   gem.add_dependency "bundler", ">= 1.3"
 end

@@ -31,9 +31,9 @@ See also doc/NEWS.rdoc file even if you don't have custom templates.
   MESSAGE
 
   gem.add_dependency "open4", "~> 1.3.0"
-  gem.add_dependency "rdoc", "~> 4.0.0"
+  gem.add_dependency "rdoc", "~> 4.0.1"
   gem.add_dependency "bundler", ">= 1.3"
   gem.add_dependency "git", "~>1.2.5"
 
-  gem.add_development_dependency "fakefs", "~> 0.4.0"
+  gem.add_development_dependency "fakefs", "~> 0.4.2"
 end
